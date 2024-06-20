@@ -11,6 +11,14 @@ class Sample:
         self.prompt = ' '.join(codons)
         self.response = Sample.llm(self.prompt)
         self.scores = [func(self.response) for func in Sample.eval_functions]
+
+    def to_dict(self):
+        return {
+            'codons': self.codons,
+            'prompt': self.prompt,
+            'response': self.response,
+            'scores': self.scores
+        }
     
     def __lt__(self, other):
         if not isinstance(other, Sample):
@@ -62,6 +70,17 @@ def breedFrontStoch(P):
     nCodons = [a_codon if random.random() > 0.5 else b_codon for a_codon, b_codon in zip(A.codons, B.codons)]
     return Sample(nCodons)
 
+import json
+def save_to_jsonl(queue, filename):
+    totLen = len(queue)
+    with open(filename, 'w') as f:
+        while queue:
+            sample = queue.popleft()
+            print(f"Sample {totLen - len(queue)}/{totLen}")
+            print(f"{sample}")
+            json_string = json.dumps(sample.to_dict())
+            f.write(json_string + '\n')
+
 P = deque()
 reqOps = 100
 mutProb = 0.5
@@ -70,9 +89,6 @@ for opNum in range(reqOps):
     nSample = op(P)
     P = reformFront(P, nSample)
     print(f"Op {opNum}: {len(P)} samples in front.")
-
 print("***FINISHED***")
-for i in range(len(P)):
-    print(f"Sample {i}/{len(P)}")
-    print(P[i])
+save_to_jsonl(P, 'output.jsonl')
 print("***FINISHED***")
