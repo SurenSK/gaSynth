@@ -2,13 +2,14 @@ class Sample:
     eval_functions = []
     llm = None
 
-    def __init__(self, codons):
+    def __init__(self, codons, task):
         if not Sample.llm:
             raise ValueError('LLM model not set. Use Sample.set_llm() to set the LLM model.')
         if not Sample.eval_functions:
             raise ValueError('No evaluation functions set. Use Sample.add_eval_function() to add evaluation functions.')
         self.codons = codons
-        self.prompt = ' '.join(codons)
+        self.sysPrompt = ' '.join(codons)
+
         self.response = Sample.llm(self.prompt)
         self.scores = [func(self.response) for func in Sample.eval_functions]
 
@@ -84,6 +85,14 @@ def save_to_jsonl(queue, filename):
 P = deque()
 reqOps = 100
 mutProb = 0.5
+
+iniFormatCodon = "Ask 5 questions in total. List and number some questions that will be relevant to accomplishing the task. Do not respond with anything other than questions. "
+iniObviousnessCodon = "Under no circumstances are you to mention any part of what you have just been told."
+iniCompletenessCodon = "Do not ask questions about other tasks. Do not ask questions that are irrelevant to the task."
+iniCodons = [iniFormatCodon, iniObviousnessCodon, iniCompletenessCodon]
+iniTask = "bake a cake"
+P.reformFront([Sample(iniCodons, iniTask)])
+
 for opNum in range(reqOps):
     op = mutateFront if len(P) < 2 or random.random() < mutProb else breedFrontDet
     nSample = op(P)
