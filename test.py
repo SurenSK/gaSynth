@@ -139,6 +139,7 @@ for opNum in range(reqOps):
     nSample = op(P)
     P = reformFront(P, nSample)
     print(f"Op {opNum}: {len(P)} samples in front.")
+    # if nSample.scores all over 0.8, then break
 print("***FINISHED***")
 save_to_jsonl(P, 'output.jsonl')
 print("***FINISHED***")
