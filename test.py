@@ -60,8 +60,15 @@ class Sample:
         Sample.count += 1
 
         prompt = f"{self.sysPrompt}\nYou need to perform the task of {self.task}."
+        tGen = time.time()
         self.response = Sample.llm(prompt)[0]['generated_text'].replace(prompt, "")
+        nToks = len(Sample.tokenizer.encode(self.response))
+        tGen = time.time() - tGen
+        logLine(f"t+{tGen}s Generated response for sample {self.id} with {nToks} tokens. Tok/s: {nToks/tGen}.")
+        tEval = time.time()
         self.scores = [func(self.response, self.task) for func in Sample.eval_functions]
+        tEval = time.time() - tEval
+        logLine(f"t+{tEval}s Evaluated response for sample {self.id}.")
         logLine(f"t+{time.time() - t0}s Created sample {self.id}.")
 
     def to_dict(self):
