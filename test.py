@@ -14,18 +14,37 @@ class Sample:
     @classmethod
     def set_llm(cls, model_id, token):
         print("Setting up LLM model...")
-        cls.tokenizer = AutoTokenizer.from_pretrained(model_id, token=token)
-        model = AutoModelForCausalLM.from_pretrained(model_id, cache_dir=".", device_map="auto", do_sample=True, temperature=2.5, num_beams=5, token=token)
-        model.eval()
-        print("LLM model loaded.")
-        cls.llm = pipeline("text-generation", model=model, tokenizer=cls.tokenizer, max_new_tokens=200)
-        # cls.llm.tokenizer.pad_token_id = model.config.eos_token_id
-        if cls.llm is None:
-            raise ValueError('LLM model not set.')
-        if cls.tokenizer is None:
-            raise ValueError('Tokenizer not set.')
-        if cls.llm is not None and cls.tokenizer is not None:
-            print("LLM model set up.")
+        try:
+            cls.tokenizer = AutoTokenizer.from_pretrained(model_id, token=token)
+            print("Tokenizer loaded.")
+            
+            # Check CUDA availability
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"Using device: {device}")
+            
+            model = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                cache_dir=".",
+                device_map=device,
+                do_sample=True,
+                temperature=2.5,
+                num_beams=5,
+                token=token
+            )
+            model.eval()
+            print("Model loaded.")
+            
+            cls.llm = pipeline("text-generation", model=model, tokenizer=cls.tokenizer, max_new_tokens=200, device=0 if device == "cuda" else -1)
+            print("Pipeline created.")
+            
+            if cls.llm is None:
+                raise ValueError('LLM model not set.')
+            if cls.tokenizer is None:
+                raise ValueError('Tokenizer not set.')
+            print("LLM model set up successfully.")
+        except Exception as e:
+            print(f"Error setting up LLM model: {str(e)}")
+            raise
 
     @classmethod
     def add_eval_function(cls, func):
