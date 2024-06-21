@@ -22,7 +22,6 @@ class Sample:
             model = AutoModelForCausalLM.from_pretrained(
                 model_id, load_in_8bit=True, device_map="auto", do_sample=True, 
                 cache_dir=".",
-                device_map="auto",
                 token=token
             )
             print("Model loaded.")
