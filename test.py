@@ -24,7 +24,6 @@ class Sample:
                 cache_dir=".",
                 token=token
             )
-            model.eval()
             print("Model loaded.")
             
             # Create pipeline without specifying device
