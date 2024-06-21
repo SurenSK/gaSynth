@@ -22,9 +22,6 @@ class Sample:
             model = AutoModelForCausalLM.from_pretrained(
                 model_id,
                 cache_dir=".",
-                do_sample=True,
-                temperature=2.5,
-                num_beams=5,
                 token=token
             )
             model.eval()
