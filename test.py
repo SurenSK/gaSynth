@@ -139,7 +139,7 @@ def correctnessMetric(response, task):
     return score
 
 # Set up the LLM and evaluation functions
-Sample.set_llm("mistralai/Mistral-7B-Instruct-v0.2", "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")
+Sample.set_llm("mistralai/Mistral-7B-Instruct-v0.2", "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")
 Sample.add_eval_function(lengthMetric)
 Sample.add_eval_function(metricObviousness)
 Sample.add_eval_function(correctnessMetric)
