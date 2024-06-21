@@ -85,9 +85,9 @@ def reformFront(P, A):
     P_ = deque()
     while P:
         temp = P.popleft()
-        if all(temp < A):  # A dominates temp
+        if all(temp <= A):  # A dominates temp
             continue
-        elif all(A < temp):  # Temp dominates A
+        elif all(A <= temp):  # Temp dominates A
             P_.append(temp)
             return P_.extend(P)
         else:
