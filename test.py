@@ -83,16 +83,17 @@ class Sample:
 
 def reformFront(P, A):
     P_ = deque()
-    while P:
-        temp = P.popleft()
-        if all(temp <= A):  # A dominates temp
+    for temp in P:
+        if not any(A < temp):  # A dominates temp
             continue
-        elif all(A <= temp):  # Temp dominates A
+        elif not any(temp < A):  # Temp dominates A
             P_.append(temp)
-            return P_.extend(P)
+            P_.extend(P)
+            return P_
         else:
             P_.append(temp)
-    P_.append(A)  # Add the new sample to the front
+    
+    P_.append(A)
     return P_
 
 def sampleFront(P, n):
