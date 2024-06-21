@@ -99,7 +99,7 @@ def sampleFront(P, n):
     return random.sample(list(P), n)
 
 def mut(a_codon):
-    prompt = f"You are a helpful AI writing assistant. Reword this sentence without changing the meaning: {a_codon}"
+    prompt = f"You are a helpful AI writing assistant. Reword this sentence without changing the meaning: {a_codon}. Do not write anything other than the reworded sentence."
     return Sample.llm(prompt)[0]['generated_text'].replace(prompt, "").strip()
 
 def mutateFront(P):
