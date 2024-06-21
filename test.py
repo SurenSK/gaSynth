@@ -131,11 +131,11 @@ def save_to_jsonl(queue, filename):
 def lengthMetric(response, task):
     questions = re.sub(r'\d+\.\s+|User \d+:\s+', '', response).split('?')
     questions_ = [q_.strip() + '?' for q_ in questions if q_.strip()]
-    return max(1, len(questions_) / 5)
+    return min(1, len(questions_) / 5)
 
 def metricObviousness(response, task):
     embeddings = Sample.embeddingModel.encode([response, task])
-    return max(util.pytorch_cos_sim(embeddings[0], embeddings[1]).item(), 0)
+    return 1-max(util.pytorch_cos_sim(embeddings[0], embeddings[1]).item(), 0)
 
 import torch
 import torch.nn.functional as F
