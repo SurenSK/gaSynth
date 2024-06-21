@@ -94,13 +94,13 @@ def reformFront(P, A):
         elif not any(temp < A):  # Temp dominates A
             P_.append(temp)
             P_.extend(P)
-            print(f"t+{time.time() - t0}s Reformed front with {len(P)+1} samples.")
+            logLine(f"t+{time.time() - t0}s Reformed front with {len(P)+1} samples.")
             return P_
         else:
             P_.append(temp)
     
     P_.append(A)
-    print(f"t+{time.time() - t0}s Reformed front with {len(P)+1} samples.")
+    logLine(f"t+{time.time() - t0}s Reformed front with {len(P)+1} samples.")
     return P_
 
 def sampleFront(P, n):
@@ -114,7 +114,7 @@ def mutateFront(P):
     A = sampleFront(P, 1)[0]
     nCodons = [a_codon if random.random() > 0.5 else mut(a_codon) for a_codon in A.codons]
     B = Sample(nCodons, A.task)
-    print(f"t+{time.time() - t0}s Mutated {A.id} to get {B.id}.")
+    logLine(f"t+{time.time() - t0}s Mutated {A.id} to get {B.id}.")
     return B
 
 def breedFrontDet(P):
@@ -122,7 +122,7 @@ def breedFrontDet(P):
     A, B = sampleFront(P, 2)
     nCodons = [a_codon if a_score > b_score else b_codon for (a_codon, a_score), (b_codon, b_score) in zip(zip(A.codons, A.scores), zip(B.codons, B.scores))]
     C = Sample(nCodons, A.task)
-    print(f"t+{time.time() - t0}s Bred {A.id} and {B.id} to get {C.id}.")
+    logLine(f"t+{time.time() - t0}s Bred {A.id} and {B.id} to get {C.id}.")
     return C
 
 def breedFrontStoch(P):
@@ -130,7 +130,7 @@ def breedFrontStoch(P):
     A, B = sampleFront(P, 2)
     nCodons = [a_codon if random.random() > 0.5 else b_codon for a_codon, b_codon in zip(A.codons, B.codons)]
     C = Sample(nCodons, A.task)
-    print(f"t+{time.time() - t0}s Bred {A.id} and {B.id} to get {C.id}.")
+    logLine(f"t+{time.time() - t0}s Bred {A.id} and {B.id} to get {C.id}.")
     return C
 
 def save_to_jsonl(queue, filename):
@@ -168,7 +168,7 @@ def correctnessMetric(response, task):
     no_logit = logits[no_token_id].item()
     
     score = torch.sigmoid(torch.tensor(yes_logit - no_logit)).item()
-    print(f"t+{time.time() - t0}s Calculated correctness metric")
+    logLine(f"t+{time.time() - t0}s Calculated correctness metric")
     return score
 
 # Set up the LLM and evaluation functions
