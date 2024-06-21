@@ -5,6 +5,10 @@ import re
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from sentence_transformers import SentenceTransformer, util
 
+def logLine(l):
+    with open("log.txt", "a") as log_file:
+        log_file.write(str(l) + "\n")
+
 class Sample:
     eval_functions = []
     llm = None
@@ -13,10 +17,10 @@ class Sample:
 
     @classmethod
     def set_llm(cls, model_id, token):
-        print("Setting up LLM model...")
+        logLine("Setting up LLM model...")
         try:
             cls.tokenizer = AutoTokenizer.from_pretrained(model_id, token=token)
-            print("Tokenizer loaded.")
+            logLine("Tokenizer loaded.")
             
             # Load the model without specifying device
             model = AutoModelForCausalLM.from_pretrained(
@@ -24,19 +28,19 @@ class Sample:
                 cache_dir=".",
                 token=token
             )
-            print("Model loaded.")
+            logLine("Model loaded.")
             
             # Create pipeline without specifying device
             cls.llm = pipeline("text-generation", model=model, tokenizer=cls.tokenizer, max_new_tokens=200)
-            print("Pipeline created.")
+            logLine("Pipeline created.")
             
             if cls.llm is None:
                 raise ValueError('LLM model not set.')
             if cls.tokenizer is None:
                 raise ValueError('Tokenizer not set.')
-            print("LLM model set up successfully.")
+            logLine("LLM model set up successfully.")
         except Exception as e:
-            print(f"Error setting up LLM model: {str(e)}")
+            logLine(f"Error setting up LLM model: {str(e)}")
             raise
 
     @classmethod
@@ -118,8 +122,8 @@ def save_to_jsonl(queue, filename):
     with open(filename, 'w') as f:
         while queue:
             sample = queue.popleft()
-            print(f"Sample {totLen - len(queue)}/{totLen}")
-            print(f"{sample}")
+            logLine(f"Sample {totLen - len(queue)}/{totLen}")
+            logLine(f"{sample}")
             json_string = json.dumps(sample.to_dict())
             f.write(json_string + '\n')
 
@@ -152,6 +156,7 @@ def correctnessMetric(response, task):
 
 # Set up the LLM and evaluation functions
 Sample.set_llm("mistralai/Mistral-7B-Instruct-v0.2", "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")
+logLine("Adding evaluation functions...")
 Sample.add_eval_function(lengthMetric)
 Sample.add_eval_function(metricObviousness)
 Sample.add_eval_function(correctnessMetric)
@@ -172,8 +177,8 @@ for opNum in range(reqOps):
     op = mutateFront if len(P) < 2 or random.random() < mutProb else breedFrontDet
     nSample = op(P)
     P = reformFront(P, nSample)
-    print(f"Op {opNum}: {len(P)} samples in front.")
+    logLine(f"Op {opNum}: {len(P)} samples in front.")
     # if nSample.scores all over 0.8, then break
-print("***FINISHED***")
+logLine("***FINISHED***")
 save_to_jsonl(P, 'output.jsonl')
-print("***FINISHED***")
+logLine("***FINISHED***")
