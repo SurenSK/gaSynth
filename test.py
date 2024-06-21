@@ -122,8 +122,8 @@ def mutateFront(P):
         return Sample.llm(prompt)[0]['generated_text'].replace(prompt, "").strip()
     A = sampleFront(P, 1)[0]
     nCodons = [a_codon if random.random() > 0.5 else mut(a_codon) for a_codon in A.codons]
+    logLine(f"t+{time.time() - t0}s Mutated {A.id} to get new codons.")
     B = Sample(nCodons, A.task)
-    logLine(f"t+{time.time() - t0}s Mutated {A.id} to get {B.id}.")
     return B
 
 def breedFrontDet(P):
