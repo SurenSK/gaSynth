@@ -18,14 +18,10 @@ class Sample:
             cls.tokenizer = AutoTokenizer.from_pretrained(model_id, token=token)
             print("Tokenizer loaded.")
             
-            # Check CUDA availability
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            print(f"Using device: {device}")
-            
+            # Load the model without specifying device
             model = AutoModelForCausalLM.from_pretrained(
                 model_id,
                 cache_dir=".",
-                device_map=device,
                 do_sample=True,
                 temperature=2.5,
                 num_beams=5,
@@ -34,7 +30,8 @@ class Sample:
             model.eval()
             print("Model loaded.")
             
-            cls.llm = pipeline("text-generation", model=model, tokenizer=cls.tokenizer, max_new_tokens=200, device=0 if device == "cuda" else -1)
+            # Create pipeline without specifying device
+            cls.llm = pipeline("text-generation", model=model, tokenizer=cls.tokenizer, max_new_tokens=200)
             print("Pipeline created.")
             
             if cls.llm is None:
