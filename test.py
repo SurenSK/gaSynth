@@ -19,7 +19,7 @@ class Sample:
         model.eval()
         print("LLM model loaded.")
         cls.llm = pipeline("text-generation", model=model, tokenizer=cls.tokenizer, max_new_tokens=200)
-        cls.llm.tokenizer.pad_token_id = model.config.eos_token_id
+        # cls.llm.tokenizer.pad_token_id = model.config.eos_token_id
         if cls.llm is None:
             raise ValueError('LLM model not set.')
         if cls.tokenizer is None:
