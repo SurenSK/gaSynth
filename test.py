@@ -64,7 +64,7 @@ class Sample:
         self.response = Sample.llm(prompt)[0]['generated_text'].replace(prompt, "")
         nToks = len(Sample.tokenizer.encode(self.response))
         tGen = time.time() - tGen
-        logLine(f"t+{tGen:.1f}s]\tGenerated response for sample {self.id} with {nToks} tokens. Tok/s: {nToks/tGen}.")
+        logLine(f"t+{tGen:.1f}s]\tGenerated response for sample {self.id} with {nToks} tokens. Tok/s: {nToks/tGen:.0f}.")
 
         tEval = time.time()
         self.scores = [func(self.response, self.task) for func in Sample.eval_functions]
