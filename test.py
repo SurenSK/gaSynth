@@ -113,7 +113,10 @@ def reformFront(P, A):
     return P_
 
 def sampleFront(P, n):
-    return random.sample(P, n)
+    logLine(f"Sampling {n} from {len(P)}")
+    samples = random.sample(P, n)
+    logLine(f"Sampled {len(samples)}")
+    return samples
 
 def mutateFront(P):
     t0 = time.time()
