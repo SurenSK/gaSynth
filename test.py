@@ -209,6 +209,8 @@ for opNum in range(reqOps):
     nSample = op(P)
     P = reformFront(P, nSample)
     logLine(f"Post Op {opNum}: {len(P)} samples in front.\n")
+    cScores = [[round(score, 3) for score in sample.scores] for sample in P]
+    logLine(f"sScores:{cScores}")
 logLine("***FINISHED***")
 save_to_jsonl(P, 'output.jsonl')
 logLine("***FINISHED***")
