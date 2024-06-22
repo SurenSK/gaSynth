@@ -184,6 +184,7 @@ def correctnessMetric(response, task):
     logLine(f"t+{time.time() - t0:.1f}s]\tCalculated correctness metric")
     return score
 
+tTotal = time.time()
 # Set up the LLM and evaluation functions
 Sample.set_llm("mistralai/Mistral-7B-Instruct-v0.2", "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")
 logLine("Adding evaluation functions...")
@@ -213,4 +214,5 @@ for opNum in range(reqOps):
     logLine(f"sScores:{cScores}")
 logLine("***FINISHED***")
 save_to_jsonl(P, 'output.jsonl')
+logLine(f"tTotal: {time.time() - tTotal:.1f}s")
 logLine("***FINISHED***")
