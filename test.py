@@ -113,7 +113,7 @@ def reformFront(P, A):
     return P_
 
 def sampleFront(P, n):
-    return random.sample(list(P), n)
+    return random.sample(P, n)
 
 def mutateFront(P):
     t0 = time.time()
@@ -129,6 +129,8 @@ def mutateFront(P):
 def breedFrontDet(P):
     t0 = time.time()
     A, B = sampleFront(P, 2)
+    if A.id == B.id:
+        raise ValueError(f"Cannot breed a sample with itself. Sampled {A.id}-{B.id} twice.")
     nCodons = [a_codon if a_score > b_score else b_codon for (a_codon, a_score), (b_codon, b_score) in zip(zip(A.codons, A.scores), zip(B.codons, B.scores))]
     C = Sample(nCodons, A.task)
     logLine(f"t+{time.time() - t0:.1}s Bred {A.id} and {B.id} to get {C.id}.")
