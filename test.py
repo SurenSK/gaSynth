@@ -64,14 +64,14 @@ class Sample:
         self.response = Sample.llm(prompt)[0]['generated_text'].replace(prompt, "")
         nToks = len(Sample.tokenizer.encode(self.response))
         tGen = time.time() - tGen
-        logLine(f"t+{tGen:.1f}s]\tGenerated response for sample {self.id} with {nToks} tokens. Tok/s: {nToks/tGen:.0f}.")
+        logLine(f"t+{tGen:.1f}s\tGenerated response for sample {self.id} with {nToks} tokens. Tok/s: {nToks/tGen:.0f}.")
 
         tEval = time.time()
         self.scores = [func(self.response, self.task) for func in Sample.eval_functions]
         tEval = time.time() - tEval
-        logLine(f"t+{tEval:.1f}s]\tEvaluated response for sample {self.id}.")
+        logLine(f"t+{tEval:.1f}s\tEvaluated response for sample {self.id}.")
 
-        logLine(f"t+{time.time() - t0:.1f}s]\tCreated sample {self.id}.")
+        logLine(f"t+{time.time() - t0:.1f}s\tCreated sample {self.id}.")
 
     def to_dict(self):
         return {
@@ -104,12 +104,12 @@ def reformFront(P, A):
             continue
         elif temp > A:  # Temp dominates A
             P_.extend(list(P)[i:])  # Early exit: keep remaining samples, including the current one
-            logLine(f"t+{time.time() - t0:.1f}s]\tReformed front with {len(P_)} samples.")
+            logLine(f"t+{time.time() - t0:.1f}s\tReformed front with {len(P_)} samples.")
             return P_
         P_.append(temp)
     
     P_.append(A)
-    logLine(f"t+{time.time() - t0:.1f}s]\tReformed front with {len(P_)} samples.")
+    logLine(f"t+{time.time() - t0:.1f}s\tReformed front with {len(P_)} samples.")
     return P_
 
 def sampleFront(P, n):
@@ -121,10 +121,11 @@ def mutateFront(P):
     def mut(a_codon):
         prompt = f"You are a helpful AI writing assistant. Reword this sentence without changing the meaning: {a_codon}. Put the reworded sentence after the <new> tag."
         resp = Sample.llm(prompt)[0]['generated_text'].replace(prompt, "").strip()
+        logLine(f"Mutated {a_codon} to get {resp}.")
         return resp.split("<new>")[1].strip()
     A = sampleFront(P, 1)[0]
     nCodons = [a_codon if random.random() > 0.5 else mut(a_codon) for a_codon in A.codons]
-    logLine(f"t+{time.time() - t0:.1f}s]\tMutated {A.id} to get new codons.")
+    logLine(f"t+{time.time() - t0:.1f}s\tMutated {A.id} to get new codons.")
     B = Sample(nCodons, A.task)
     return B
 
@@ -135,7 +136,7 @@ def breedFrontDet(P):
         raise ValueError(f"Cannot breed a sample with itself. Sampled {A.id}-{B.id} twice.")
     nCodons = [a_codon if a_score > b_score else b_codon for (a_codon, a_score), (b_codon, b_score) in zip(zip(A.codons, A.scores), zip(B.codons, B.scores))]
     C = Sample(nCodons, A.task)
-    logLine(f"t+{time.time() - t0:.1f}s]\tBred {A.id} and {B.id} to get {C.id}.")
+    logLine(f"t+{time.time() - t0:.1f}s\tBred {A.id} and {B.id} to get {C.id}.")
     return C
 
 def breedFrontStoch(P):
@@ -143,7 +144,7 @@ def breedFrontStoch(P):
     A, B = sampleFront(P, 2)
     nCodons = [a_codon if random.random() > 0.5 else b_codon for a_codon, b_codon in zip(A.codons, B.codons)]
     C = Sample(nCodons, A.task)
-    logLine(f"t+{time.time() - t0:.1f}s]\tBred {A.id} and {B.id} to get {C.id}.")
+    logLine(f"t+{time.time() - t0:.1f}s\tBred {A.id} and {B.id} to get {C.id}.")
     return C
 
 def save_to_jsonl(queue, filename):
@@ -181,7 +182,7 @@ def correctnessMetric(response, task):
     no_logit = logits[no_token_id].item()
     
     score = torch.sigmoid(torch.tensor(yes_logit - no_logit)).item()
-    logLine(f"t+{time.time() - t0:.1f}s]\tCalculated correctness metric")
+    logLine(f"t+{time.time() - t0:.1f}s\tCalculated correctness metric")
     return score
 
 tTotal = time.time()
