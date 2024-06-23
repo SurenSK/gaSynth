@@ -119,10 +119,10 @@ def sampleFront(P, n):
 def mutateFront(P):
     t0 = time.time()
     def mut(a_codon):
-        prompt = f"You are a helpful AI writing assistant. Reword this sentence without changing the meaning: {a_codon}. Put the reworded sentence after the <new> tag."
+        prompt = f"You are a helpful AI writing assistant. Reword this sentence without changing the meaning: {a_codon}. Certainly, the reworded sentence is:"
         resp = Sample.llm(prompt)[0]['generated_text'].replace(prompt, "").strip()
         logLine(f"Mutated {a_codon} to get {resp}.")
-        return resp.split("<new>")[1].strip()
+        return resp
     A = sampleFront(P, 1)[0]
     nCodons = [a_codon if random.random() > 0.5 else mut(a_codon) for a_codon in A.codons]
     logLine(f"t+{time.time() - t0:.1f}s\tMutated {A.id} to get new codons.")
