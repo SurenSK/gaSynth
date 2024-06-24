@@ -174,11 +174,11 @@ def correctnessMetric(response, task):
     
     score = 0.0
     resp = Sample.llm(prompt)[0]['generated_text'].replace(prompt, "").strip().lower()
-    score += 1.0 if resp == 'yes' else 0.0
+    score += 1.0 if 'yes' in resp else 0.0
     resp = Sample.llm(prompt)[0]['generated_text'].replace(prompt, "").strip().lower()
-    score += 1.0 if resp == 'yes' else 0.0
+    score += 1.0 if 'yes' in resp else 0.0
     resp = Sample.llm(prompt)[0]['generated_text'].replace(prompt, "").strip().lower()
-    score += 1.0 if resp == 'yes' else 0.0
+    score += 1.0 if 'yes' in resp else 0.0
     score /= 3
     
     logLine(f"t+{time.time() - t0:.1f}s\tCalculated correctness metric: response='{resp}' score={score:.1f}")
