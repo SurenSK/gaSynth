@@ -179,7 +179,7 @@ def correctnessMetric(response, task):
     inputs = Sample.tokenizer(prompt, return_tensors="pt").to(Sample.llm.device)
     
     with torch.no_grad():
-        outputs = Sample.llm(**inputs, return_dict=True)
+        outputs = Sample.llm(**inputs)
     
     logits = outputs.logits[0, -1, :]
     
