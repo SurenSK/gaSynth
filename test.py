@@ -187,16 +187,16 @@ def correctnessMetric(response, task):
     no_logits = logits[no_tokens].mean().item()
     
     # Debug: Print token IDs and their corresponding logits
-    print(f"Yes tokens: {yes_tokens}, logits: {logits[yes_tokens].tolist()}")
-    print(f"No tokens: {no_tokens}, logits: {logits[no_tokens].tolist()}")
+    logLine(f"Yes tokens: {yes_tokens}, logits: {logits[yes_tokens].tolist()}")
+    logLine(f"No tokens: {no_tokens}, logits: {logits[no_tokens].tolist()}")
     
     # Find top 5 most likely next tokens
     top_5 = torch.topk(logits, 5)
-    print("Top 5 next tokens:")
+    logLine("Top 5 next tokens:")
     for i in range(5):
         token_id = top_5.indices[i].item()
         token = Sample.tokenizer.decode([token_id])
-        print(f"  {token} (ID: {token_id}): {top_5.values[i].item():.2f}")
+        logLine(f"  {token} (ID: {token_id}): {top_5.values[i].item():.2f}")
     
     max_token_id = logits.argmax().item()
     max_token = Sample.tokenizer.decode([max_token_id])
