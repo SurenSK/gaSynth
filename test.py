@@ -212,7 +212,24 @@ for opNum in range(reqOps):
     logLine(f"Post Op {opNum}: {len(P)} samples in front.\n")
     cScores = [[round(score, 3) for score in sample.scores] for sample in P]
     logLine(f"sScores:{cScores}")
+while len(P) > 1:
+    nSample = breedFrontDet(P)
+    P = reformFront(P, nSample)
+
 logLine("***FINISHED***")
-save_to_jsonl(P, 'output.jsonl')
+save_to_jsonl(P, 'output_100_prompt.jsonl')
+
+reqGenerations = 100
+sysPrompt = P[0].sysPrompt
+with open("output_100.jsonl", "w") as file:
+    for i in range(reqGenerations):
+        tGen = time.time()
+        prompt = f"{sysPrompt}\nYou need to perform the task of {iniTask}."
+        response = Sample.llm(prompt)[0]['generated_text'].replace(prompt, "")
+        nToks = len(Sample.tokenizer.encode(response))
+        tGen = time.time() - tGen
+        logLine(f"t+{tGen:.1f}s\tGenerated response #{i} with {nToks} tokens. Tok/s: {nToks/tGen:.0f}.")
+        file.write(json.dumps({"resp": response}) + "\n")
+print("The strings were successfully written to finalGenerations.jsonl")
 logLine(f"tTotal: {time.time() - tTotal:.1f}s")
 logLine("***FINISHED***")
