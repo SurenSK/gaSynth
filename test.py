@@ -181,8 +181,10 @@ def correctnessMetric(response, task):
     yes_logit = logits[yes_token_id].item()
     no_logit = logits[no_token_id].item()
     
+    max_token_id = logits.argmax().item()
+    max_token = Sample.tokenizer.decode(max_token_id)
     score = torch.sigmoid(torch.tensor(yes_logit - no_logit)).item()
-    logLine(f"t+{time.time() - t0:.1f}s\tCalculated correctness metric")
+    logLine(f"t+{time.time() - t0:.1f}s\tCalculated correctness metric max={max_token}")
     return score
 
 tTotal = time.time()
