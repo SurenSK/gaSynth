@@ -16,7 +16,7 @@ class BatchedSample:
     tokenizer = None
     embeddingModel = SentenceTransformer("all-MiniLM-L6-v2")
     count = 0
-    batch_size = 4  # Adjust this value based on your GPU memory and performance requirements
+    batch_size = 128  # Adjust this value based on your GPU memory and performance requirements
 
     @classmethod
     def set_llm(cls, model_id, token):
@@ -241,7 +241,7 @@ logLine("***FINISHED***")
 save_to_jsonl(P, 'output_100_prompt.jsonl')
 
 tCompletes = time.time()
-reqCompletions = 10
+reqCompletions = 100
 
 logLine(f"Final front size before selection: {len(P)}")
 sysPrompt = formPrompt(P)
