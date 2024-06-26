@@ -212,7 +212,6 @@ for opNum in range(reqOps):
     logLine(f"Post Op {opNum}: {len(P)} samples in front.\n")
     cScores = [[round(score, 3) for score in sample.scores] for sample in P]
     logLine(f"sScores:{cScores}")
-logLine(f"Final front size before selection: {len(P)}")
 logLine(f"tOpt: {time.time() - tOpt:.1f}s")
 logLine("***FINISHED***")
 save_to_jsonl(P, 'output_100_prompt.jsonl')
@@ -236,6 +235,8 @@ def formPrompt(P):
                 best_codons[i] = sample.codons[i]
     
     return ' '.join(best_codons)
+
+logLine(f"Final front size before selection: {len(P)}")
 sysPrompt = formPrompt(P)
 with open("output_100.jsonl", "w") as file:
     for i in range(reqCompletions):
