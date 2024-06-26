@@ -150,11 +150,9 @@ def breedFrontStoch(P):
 def save_to_jsonl(queue, filename):
     totLen = len(queue)
     with open(filename, 'w') as f:
-        while queue:
-            sample = queue.popleft()
-            logLine(f"Sample {totLen - len(queue)}/{totLen}")
-            logLine(f"{sample}")
-            json_string = json.dumps(sample.to_dict())
+        for i,s in enumerate(queue):
+            logLine(f"Sample {i}/{len(queue)} - {s}")
+            json_string = json.dumps(s.to_dict())
             f.write(json_string + '\n')
 
 # Evaluation metrics
