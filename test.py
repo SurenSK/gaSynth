@@ -184,6 +184,24 @@ def correctnessMetric(response, task):
     logLine(f"t+{time.time() - t0:.1f}s\tCalculated correctness metric: response='{resp}' score={score:.1f}")
     return score
 
+def formPrompt(P):
+    if not P:
+        raise ValueError("P must not be empty")
+    
+    best_codons = ['', '', '']
+    best_scores = [float('-inf'), float('-inf'), float('-inf')]
+    
+    for sample in P:
+        if len(sample.codons) != 3 or len(sample.scores) != 3:
+            raise ValueError(f"Each sample must have exactly 3 codons and 3 scores. Sample {sample.id} has {len(sample.codons)} codons and {len(sample.scores)} scores.")
+        
+        for i in range(3):
+            if sample.scores[i] > best_scores[i]:
+                best_scores[i] = sample.scores[i]
+                best_codons[i] = sample.codons[i]
+    
+    return ' '.join(best_codons)
+
 tTotal = time.time()
 # Set up the LLM and evaluation functions
 Sample.set_llm("mistralai/Mistral-7B-Instruct-v0.2", "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")
@@ -213,28 +231,14 @@ for opNum in range(reqOps):
     cScores = [[round(score, 3) for score in sample.scores] for sample in P]
     logLine(f"sScores:{cScores}")
 logLine(f"tOpt: {time.time() - tOpt:.1f}s")
+logLine(f"Final front size before selection: {len(P)}")
 logLine("***FINISHED***")
+logLine(f"Final front size before selection: {len(P)}")
 save_to_jsonl(P, 'output_100_prompt.jsonl')
 
 tCompletes = time.time()
 reqCompletions = 10
-def formPrompt(P):
-    if not P:
-        raise ValueError("P must not be empty")
-    
-    best_codons = ['', '', '']
-    best_scores = [float('-inf'), float('-inf'), float('-inf')]
-    
-    for sample in P:
-        if len(sample.codons) != 3 or len(sample.scores) != 3:
-            raise ValueError(f"Each sample must have exactly 3 codons and 3 scores. Sample {sample.id} has {len(sample.codons)} codons and {len(sample.scores)} scores.")
-        
-        for i in range(3):
-            if sample.scores[i] > best_scores[i]:
-                best_scores[i] = sample.scores[i]
-                best_codons[i] = sample.codons[i]
-    
-    return ' '.join(best_codons)
+
 
 logLine(f"Final front size before selection: {len(P)}")
 sysPrompt = formPrompt(P)
