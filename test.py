@@ -194,7 +194,7 @@ Sample.add_eval_function(correctnessMetric)
 
 # Main execution
 P = deque()
-reqOps = 10
+reqOps = 5
 mutProb = 0.5
 
 iniFormatCodon = "Ask 5 questions in total. List and number some questions that will be relevant to accomplishing the task. Do not respond with anything other than questions. "
@@ -213,19 +213,30 @@ for opNum in range(reqOps):
     cScores = [[round(score, 3) for score in sample.scores] for sample in P]
     logLine(f"sScores:{cScores}")
 logLine(f"Final front size before selection: {len(P)}")
-while len(P) > 1:
-    nSample = breedFrontDet(P)
-    P = reformFront(P, nSample)
 logLine(f"tOpt: {time.time() - tOpt:.1f}s")
 logLine("***FINISHED***")
 save_to_jsonl(P, 'output_100_prompt.jsonl')
 
 tCompletes = time.time()
 reqCompletions = 10
-if len(P) != 1:
-    logLine("Front must have exactly one sample. Length is {len(P)}.")
-    raise ValueError("Front must have exactly one sample. Length is {len(P)}.")
-sysPrompt = P[0].sysPrompt
+def formPrompt(P):
+    if not P:
+        raise ValueError("P must not be empty")
+    
+    best_codons = ['', '', '']
+    best_scores = [float('-inf'), float('-inf'), float('-inf')]
+    
+    for sample in P:
+        if len(sample.codons) != 3 or len(sample.scores) != 3:
+            raise ValueError(f"Each sample must have exactly 3 codons and 3 scores. Sample {sample.id} has {len(sample.codons)} codons and {len(sample.scores)} scores.")
+        
+        for i in range(3):
+            if sample.scores[i] > best_scores[i]:
+                best_scores[i] = sample.scores[i]
+                best_codons[i] = sample.codons[i]
+    
+    return ' '.join(best_codons)
+sysPrompt = formPrompt(P)
 with open("output_100.jsonl", "w") as file:
     for i in range(reqCompletions):
         logLine(f"*******Generating response #{i}...")
