@@ -221,6 +221,9 @@ save_to_jsonl(P, 'output_100_prompt.jsonl')
 
 tCompletes = time.time()
 reqCompletions = 10
+P = list(P)
+if len(P) != 1:
+    raise ValueError("Front must have exactly one sample.")
 sysPrompt = P[0].sysPrompt
 with open("output_100.jsonl", "w") as file:
     for i in range(reqCompletions):
