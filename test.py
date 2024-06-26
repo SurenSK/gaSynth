@@ -228,6 +228,7 @@ if len(P) != 1:
 sysPrompt = P[0].sysPrompt
 with open("output_100.jsonl", "w") as file:
     for i in range(reqCompletions):
+        logLine(f"*******Generating response #{i}...")
         tGen = time.time()
         prompt = f"{sysPrompt}\nYou need to perform the task of {iniTask}."
         response = Sample.llm(prompt)[0]['generated_text'].replace(prompt, "")
