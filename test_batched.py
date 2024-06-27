@@ -228,7 +228,7 @@ iniTask = "bake a cake"
 initial_sample = BatchedSample(iniCodons, iniTask)
 initial_sample.evaluate()
 P.append(initial_sample)
-
+logLine("First sample evaluated and added to front.", verbose=False)
 tOpt = time.time()
 for opNum in range(reqOps):
     tOp = time.time()
