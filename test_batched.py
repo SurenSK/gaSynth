@@ -245,6 +245,7 @@ for opNum in range(reqOps):
 
     # Save samples at halfway point and at the end
     if opNum == reqOps // 2 - 1 or opNum == reqOps - 1:
+        tComp = time.time()
         if opNum == reqOps // 2 - 1:
             file = "halfway_samples.jsonl"
         else:
@@ -254,8 +255,9 @@ for opNum in range(reqOps):
         responses = BatchedSample.generate_batch(prompts)
         with open(file, "w") as f:
             for i,r in enumerate(responses):
-                logLine(f"Sample {i} Saved", verbose=False)
+                logLine(f"Sample {i} Saved")
                 f.write(json.dumps({"response": r, "scores": [func(r, iniTask) for func in BatchedSample.eval_functions]}) + "\n")
+        logLine(f"tComp: {time.time() - tComp:.1f}s Saved {reqCompletes} Samples", verbose=False)
         
 
 logLine(f"tOpt: {time.time() - tOpt:.1f}s", verbose=False)
