@@ -26,7 +26,7 @@ class BatchedSample:
             logLine("Tokenizer loaded.")
             
             model = AutoModelForCausalLM.from_pretrained(
-                model_id, load_in_8bit=True, device_map="auto", do_sample=True, 
+                model_id, load_in_8bit=True, device_map="auto", do_sample=True,
                 cache_dir=".",
                 token=token
             )
@@ -69,20 +69,25 @@ class BatchedSample:
         BatchedSample.count += 1
 
         self.prompt = f"{self.sysPrompt}\nYou need to perform the task of {self.task}."
-        # Note: The actual generation will be done in batches later
+        self.responses = []
+        self.scores = []
 
-    def evaluate(self, response):
+    def evaluate(self):
         tEval = time.time()
-        self.response = response
-        self.scores = [func(self.response, self.task) for func in BatchedSample.eval_functions]
+        self.responses = BatchedSample.generate_batch([self.prompt] * 5)
+        self.scores = [
+            [func(response, self.task) for func in BatchedSample.eval_functions]
+            for response in self.responses
+        ]
+        self.scores = [sum(score) / len(score) for score in zip(*self.scores)]  # Calculate average scores
         tEval = time.time() - tEval
-        logLine(f"t+{tEval:.1f}s\tEvaluated response for sample {self.id}.")
+        logLine(f"t+{tEval:.1f}s\tEvaluated 5 responses for sample {self.id}.")
 
     def to_dict(self):
         return {
             'codons': self.codons,
             'prompt': self.sysPrompt,
-            'response': self.response,
+            'responses': self.responses,
             'scores': self.scores
         }
     
@@ -162,7 +167,7 @@ def save_to_jsonl(queue, filename):
 def lengthMetric(response, task):
     questions = re.sub(r'\d+\.\s+|User \d+:\s+', '', response).split('?')
     questions_ = [q_.strip() + '?' for q_ in questions if q_.strip()]
-    return min(1, len(questions_) / 5)
+    return abs(len(questions_)-5)/5
 
 def metricObviousness(response, task):
     embeddings = BatchedSample.embeddingModel.encode([response, task])
@@ -196,7 +201,6 @@ def formPrompt(P):
     
     return ' '.join(best_codons)
 
-# Main execution
 tTotal = time.time()
 BatchedSample.set_llm("mistralai/Mistral-7B-Instruct-v0.2", "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")
 logLine("Adding evaluation functions...")
@@ -205,8 +209,10 @@ BatchedSample.add_eval_function(metricObviousness)
 BatchedSample.add_eval_function(correctnessMetric)
 
 P = deque()
-reqOps = 5
+reqOps = 10
 mutProb = 0.5
+halfway_samples = []
+final_samples = []
 
 iniFormatCodon = "Ask 5 questions in total. List and number some questions that will be relevant to accomplishing the task. Do not respond with anything other than questions. "
 iniObviousnessCodon = "Under no circumstances are you to mention any part of what you have just been told."
@@ -216,8 +222,7 @@ iniTask = "bake a cake"
 
 # Initialize the first sample
 initial_sample = BatchedSample(iniCodons, iniTask)
-initial_response = BatchedSample.generate_batch([initial_sample.prompt])[0]
-initial_sample.evaluate(initial_response)
+initial_sample.evaluate()
 P.append(initial_sample)
 
 tOpt = time.time()
@@ -226,38 +231,43 @@ for opNum in range(reqOps):
     op = mutateFront if len(P) < 2 or random.random() < mutProb else breedFrontDet
     nSample = op(P)
     
-    # Generate response for the new sample
-    new_response = BatchedSample.generate_batch([nSample.prompt])[0]
-    nSample.evaluate(new_response)
+    nSample.evaluate()
     
     P = reformFront(P, nSample)
     logLine(f"Post Op {opNum}: {len(P)} samples in front.\n")
     cScores = [[round(score, 3) for score in sample.scores] for sample in P]
     logLine(f"sScores:{cScores}")
 
+    # Save samples at halfway point and at the end
+    if opNum == reqOps // 2 - 1 or opNum == reqOps - 1:
+        sysPrompt = formPrompt(P)
+        prompts = [f"{sysPrompt}\nYou need to perform the task of {iniTask}."] * 100
+        responses = BatchedSample.generate_batch(prompts)
+        
+        samples = []
+        for response in responses:
+            scores = [func(response, iniTask) for func in BatchedSample.eval_functions]
+            samples.append((response, scores))
+        
+        if opNum == reqOps // 2 - 1:
+            halfway_samples = samples
+        else:
+            final_samples = samples
+
 logLine(f"tOpt: {time.time() - tOpt:.1f}s")
-logLine(f"Final front size before selection: {len(P)}")
+logLine(f"Final front size: {len(P)}")
 logLine("***FINISHED***")
 save_to_jsonl(P, 'output_100_prompt.jsonl')
 
+# Save halfway and final samples
+with open("halfway_samples.jsonl", "w") as file:
+    for response, scores in halfway_samples:
+        file.write(json.dumps({"response": response, "scores": scores}) + "\n")
+
+with open("final_samples.jsonl", "w") as file:
+    for response, scores in final_samples:
+        file.write(json.dumps({"response": response, "scores": scores}) + "\n")
+
 tCompletes = time.time()
-reqCompletions = 100
-
-logLine(f"Final front size before selection: {len(P)}")
-sysPrompt = formPrompt(P)
-with open("output_100.jsonl", "w") as file:
-    tGen = time.time()
-    prompts = [f"{sysPrompt}\nYou need to perform the task of {iniTask}."] * reqCompletions
-    responses = BatchedSample.generate_batch(prompts)
-    
-    tToks = 0
-    for i, response in enumerate(responses):
-        nToks = len(BatchedSample.tokenizer.encode(response))
-        tToks += nToks
-        logLine(f"Wrote response #{i} with {nToks} tokens.")
-        file.write(json.dumps({"resp": response}) + "\n")
-
-print("The strings were successfully written to output_100.jsonl")
-logLine(f"tCompletes: {time.time() - tCompletes:.1f}s Tok/s {tToks/(time.time()-tGen):.2f}")
 logLine(f"tTotal: {time.time() - tTotal:.1f}s")
 logLine("***FINISHED***")
