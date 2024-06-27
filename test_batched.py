@@ -239,7 +239,7 @@ for opNum in range(reqOps):
     nSample.evaluate()
     
     P = reformFront(P, nSample)
-    logLine(f"t+{time.time() - tOp:.1f}s Post Op {opNum}: {len(P)} samples in front.\n")
+    logLine(f"t+{time.time() - tOp:.1f}s Post Op {opNum}: {len(P)} samples in front.\n", verbose=False)
     cScores = [[round(score, 3) for score in sample.scores] for sample in P]
     logLine(f"sScores:{cScores}")
 
