@@ -6,9 +6,11 @@ import re
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from sentence_transformers import SentenceTransformer, util
 
-def logLine(l):
-    with open("log.txt", "a") as log_file:
-        log_file.write(str(l) + "\n")
+logVerbose = False
+def logLine(l, verbose=True):
+    if logVerbose or not verbose:
+        with open("log.txt", "a") as log_file:
+            log_file.write(str(l) + "\n")
 
 class BatchedSample:
     eval_functions = []
@@ -40,7 +42,7 @@ class BatchedSample:
                 raise ValueError('LLM model not set.')
             if cls.tokenizer is None:
                 raise ValueError('Tokenizer not set.')
-            logLine("LLM model set up successfully.")
+            logLine("LLM model set up successfully.", verbose=False)
         except Exception as e:
             logLine(f"Error setting up LLM model: {str(e)}")
             raise
@@ -202,6 +204,7 @@ def formPrompt(P):
     return ' '.join(best_codons)
 
 tTotal = time.time()
+logLine("***STARTING***", verbose=False)
 BatchedSample.set_llm("mistralai/Mistral-7B-Instruct-v0.2", "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")
 logLine("Adding evaluation functions...")
 BatchedSample.add_eval_function(lengthMetric)
@@ -227,6 +230,7 @@ P.append(initial_sample)
 
 tOpt = time.time()
 for opNum in range(reqOps):
+    tOp = time.time()
     logLine(f"Pre Op {opNum}: {len(P)} samples in front.")
     op = mutateFront if len(P) < 2 or random.random() < mutProb else breedFrontDet
     nSample = op(P)
@@ -234,7 +238,7 @@ for opNum in range(reqOps):
     nSample.evaluate()
     
     P = reformFront(P, nSample)
-    logLine(f"Post Op {opNum}: {len(P)} samples in front.\n")
+    logLine(f"t+{time.time() - tOp:.1f}s Post Op {opNum}: {len(P)} samples in front.\n")
     cScores = [[round(score, 3) for score in sample.scores] for sample in P]
     logLine(f"sScores:{cScores}")
 
@@ -254,7 +258,7 @@ for opNum in range(reqOps):
         else:
             final_samples = samples
 
-logLine(f"tOpt: {time.time() - tOpt:.1f}s")
+logLine(f"tOpt: {time.time() - tOpt:.1f}s", verbose=False)
 logLine(f"Final front size: {len(P)}")
 logLine("***FINISHED***")
 save_to_jsonl(P, 'output_100_prompt.jsonl')
@@ -263,11 +267,13 @@ save_to_jsonl(P, 'output_100_prompt.jsonl')
 with open("halfway_samples.jsonl", "w") as file:
     for response, scores in halfway_samples:
         file.write(json.dumps({"response": response, "scores": scores}) + "\n")
+    logLine("Saved halfway samples.", verbose=False)
 
 with open("final_samples.jsonl", "w") as file:
     for response, scores in final_samples:
         file.write(json.dumps({"response": response, "scores": scores}) + "\n")
+    logLine("Saved final samples.", verbose=False)
 
 tCompletes = time.time()
-logLine(f"tTotal: {time.time() - tTotal:.1f}s")
-logLine("***FINISHED***")
+logLine(f"tTotal: {time.time() - tTotal:.1f}s", verbose=False)
+logLine("***FINISHED***", verbose=False)
