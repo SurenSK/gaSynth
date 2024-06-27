@@ -212,7 +212,8 @@ BatchedSample.add_eval_function(metricObviousness)
 BatchedSample.add_eval_function(correctnessMetric)
 
 P = deque()
-reqOps = 10
+reqOps = 4
+reqCompletes = 10
 mutProb = 0.5
 halfway_samples = []
 final_samples = []
@@ -249,7 +250,7 @@ for opNum in range(reqOps):
         else:
             file = "final_samples.jsonl"
         sysPrompt = formPrompt(P)
-        prompts = [f"{sysPrompt}\nYou need to perform the task of {iniTask}."] * 100
+        prompts = [f"{sysPrompt}\nYou need to perform the task of {iniTask}."] * reqCompletes
         responses = BatchedSample.generate_batch(prompts)
         with open(file, "w") as f:
             for r in responses:
