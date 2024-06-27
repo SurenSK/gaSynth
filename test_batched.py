@@ -244,19 +244,17 @@ for opNum in range(reqOps):
 
     # Save samples at halfway point and at the end
     if opNum == reqOps // 2 - 1 or opNum == reqOps - 1:
+        if opNum == reqOps // 2 - 1:
+            file = "halfway_samples.jsonl"
+        else:
+            file = "final_samples.jsonl"
         sysPrompt = formPrompt(P)
         prompts = [f"{sysPrompt}\nYou need to perform the task of {iniTask}."] * 100
         responses = BatchedSample.generate_batch(prompts)
+        with open(file, "w") as f:
+            for r in responses:
+                f.write(json.dumps({"response": r, "scores": [func(r, iniTask) for func in BatchedSample.eval_functions]}) + "\n")
         
-        samples = []
-        for response in responses:
-            scores = [func(response, iniTask) for func in BatchedSample.eval_functions]
-            samples.append((response, scores))
-        
-        if opNum == reqOps // 2 - 1:
-            halfway_samples = samples
-        else:
-            final_samples = samples
 
 logLine(f"tOpt: {time.time() - tOpt:.1f}s", verbose=False)
 logLine(f"Final front size: {len(P)}")
