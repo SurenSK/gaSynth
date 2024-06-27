@@ -253,7 +253,8 @@ for opNum in range(reqOps):
         prompts = [f"{sysPrompt}\nYou need to perform the task of {iniTask}."] * reqCompletes
         responses = BatchedSample.generate_batch(prompts)
         with open(file, "w") as f:
-            for r in responses:
+            for i,r in enumerate(responses):
+                logLine(f"Sample {i} Saved", verbose=False)
                 f.write(json.dumps({"response": r, "scores": [func(r, iniTask) for func in BatchedSample.eval_functions]}) + "\n")
         
 
@@ -261,17 +262,6 @@ logLine(f"tOpt: {time.time() - tOpt:.1f}s", verbose=False)
 logLine(f"Final front size: {len(P)}")
 logLine("***FINISHED***")
 save_to_jsonl(P, 'output_100_prompt.jsonl')
-
-# Save halfway and final samples
-with open("halfway_samples.jsonl", "w") as file:
-    for response, scores in halfway_samples:
-        file.write(json.dumps({"response": response, "scores": scores}) + "\n")
-    logLine("Saved halfway samples.", verbose=False)
-
-with open("final_samples.jsonl", "w") as file:
-    for response, scores in final_samples:
-        file.write(json.dumps({"response": response, "scores": scores}) + "\n")
-    logLine("Saved final samples.", verbose=False)
 
 tCompletes = time.time()
 logLine(f"tTotal: {time.time() - tTotal:.1f}s", verbose=False)
