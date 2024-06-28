@@ -5,7 +5,7 @@ import json
 import re
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from sentence_transformers import SentenceTransformer, util
-
+import numpy as np
 logVerbose = False
 def logLine(l, verbose=True):
     if logVerbose or not verbose:
@@ -215,7 +215,26 @@ def formPrompt(P):
                 best_scores[i] = sample.scores[i]
                 best_codons[i] = sample.codons[i]
     
-    return ' '.join(best_codons)
+    return ' '.join(best_codons), best_scores
+
+def saveCompletions(file, P, iniTask, reqCompletes):
+    tComp = time.time()
+    sysPrompt, apparentScores = formPrompt(P)
+    prompts = [f"{sysPrompt}\nYou need to perform the task of {iniTask}."] * reqCompletes
+    responses = BatchedSample.generate_batch(prompts)
+    scores = [func(responses, iniTask) for func in BatchedSample.eval_functions]
+    scores = list(zip(*scores))
+    valid_scores = [score[1] for score in scores if score[0] > 0.9 and score[2] > 0.9]
+    mean, var = np.mean(valid_scores), np.var(valid_scores)
+
+    with open(file, "w") as f:
+        for i, (r, s) in enumerate(zip(responses, scores)):
+            logLine(f"Sample {i} Saved")
+            f.write(json.dumps({"response": r, "scores": s}) + "\n")
+    
+    logLine(f"tComp: {time.time() - tComp:.1f}s Saved {reqCompletes} samples from apparent score of {apparentScores}. Mean {mean:.2f} Var {var:.2f}", verbose=False)
+    logLine(f"Valid scores: {valid_scores}", verbose=False)
+    return valid_scores
 
 tTotal = time.time()
 logLine("***STARTING***", verbose=False)
@@ -243,11 +262,14 @@ initial_sample = BatchedSample(iniCodons, iniTask)
 initial_sample.evaluate()
 P.append(initial_sample)
 logLine("First sample evaluated and added to front.", verbose=False)
+validScores = []
+validScores.append(saveCompletions("output_0_prompt.jsonl", P, iniTask, reqCompletes))
 tOpt = time.time()
 for opNum in range(reqOps):
     tOp = time.time()
     logLine(f"Pre Op {opNum}: {len(P)} samples in front.")
-    op = mutateFront if len(P) < 2 or random.random() < mutProb else breedFrontDet
+    # op = mutateFront if len(P) < 2 or random.random() < mutProb else breedFrontDet
+    op = mutateFront if len(P) < 4 or random.random() < mutProb else breedFrontDet
     nSample = op(P)
     
     nSample.evaluate()
@@ -258,22 +280,11 @@ for opNum in range(reqOps):
     logLine(f"t+{time.time() - tOp:.1f}s Post Op {opNum} sScores:{cScores}", verbose=False)
 
     # Save samples at halfway point and at the end
-    if opNum == reqOps // 2 - 1 or opNum == reqOps - 1:
-        tComp = time.time()
-        file = "halfway_samples.jsonl" if opNum == reqOps // 2 - 1 else "final_samples.jsonl"
-        sysPrompt = formPrompt(P)
-        prompts = [f"{sysPrompt}\nYou need to perform the task of {iniTask}."] * reqCompletes
-        responses = BatchedSample.generate_batch(prompts)
-        scores = [func(responses, iniTask) for func in BatchedSample.eval_functions]
-        scores = list(zip(*scores))  # Transpose the scores
-        
-        with open(file, "w") as f:
-            for i, (r, s) in enumerate(zip(responses, scores)):
-                logLine(f"Sample {i} Saved")
-                f.write(json.dumps({"response": r, "scores": s}) + "\n")
-        
-        logLine(f"tComp: {time.time() - tComp:.1f}s Saved {reqCompletes} Samples", verbose=False)
-        
+    if opNum == reqOps // 2 - 1:
+        validScores.append(saveCompletions("output_50_prompt.jsonl", P, iniTask, reqCompletes))
+    if opNum == reqOps - 1:
+        validScores.append(saveCompletions("output_100_prompt.jsonl", P, iniTask, reqCompletes))
+
 logLine(f"tOpt: {time.time() - tOpt:.1f}s", verbose=False)
 logLine(f"Final front size: {len(P)}")
 logLine("***FINISHED***")
