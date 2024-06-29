@@ -249,7 +249,7 @@ BatchedSample.add_eval_function(metricObviousness)
 BatchedSample.add_eval_function(correctnessMetric)
 
 P = deque()
-reqOps = 100
+reqOps = 10
 reqCompletes = 100
 mutProb = 0.5
 halfway_samples = []
