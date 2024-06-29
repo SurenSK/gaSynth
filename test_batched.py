@@ -172,7 +172,7 @@ def lengthMetric(responses, task):
     def process_single_response(response):
         questions = re.sub(r'\d+\.\s+|User \d+:\s+', '', response).split('?')
         questions_ = [q_.strip() + '?' for q_ in questions if q_.strip()]
-        return abs(len(questions_) - 5) / 5
+        return max(0, 1 - abs(len(questions_) - 5) / 5)
     
     return [process_single_response(response) for response in responses]
 
