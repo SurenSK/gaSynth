@@ -240,7 +240,7 @@ def saveCompletions(P, reqCompletes):
     valid_scores = [score[1] for score in scores if score[0] > 0.9 and score[2] > 0.9] # has to be high length and correctness
     mean, var = (np.mean(valid_scores), np.var(valid_scores)) if len(valid_scores) > 1 else (0,0)
 
-    with open(file, "w") as f:
+    with open(file, "a") as f:
         for i, (r, s) in enumerate(zip(responses, scores)):
             logLine(f"Sample {i} Saved")
             f.write(json.dumps({"logid": logid, "runid": runid, "scores": s, "response": r}) + "\n")
