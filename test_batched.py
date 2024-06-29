@@ -167,7 +167,7 @@ def breedFrontStoch(P):
     return C
 
 def save_to_jsonl(queue, filename):
-    with open(filename, 'w') as f:
+    with open(filename, 'a') as f:
         for i, s in enumerate(queue):
             logLine(f"Sample {i}/{len(queue)} - {s}")
             json_string = json.dumps(s.to_dict())
