@@ -81,9 +81,13 @@ class BatchedSample:
     def evaluate(self):
         tEval = time.time()
         self.responses = BatchedSample.generate_batch([self.prompt] * 5)
-        self.scores = [
-            func(self.responses, self.task) for func in BatchedSample.eval_functions
-        ]
+        # self.scores = [
+        #     func(self.responses, self.task) for func in BatchedSample.eval_functions
+        # ]
+        self.scores = []
+        self.scores.append(BatchedSample.eval_functions[0](self.responses, self.task))
+        self.scores.append(BatchedSample.eval_functions[1](self.responses, self.task))
+        self.scores.append(BatchedSample.eval_functions[2](self.responses, self.task) if sum(x > 0.9 for x in self.scores[0])>2 else [0]*len(self.scores[0]))
         self.scores = list(zip(*self.scores))  # Transpose the scores
         self.scores = [sum(score) / len(score) for score in zip(*self.scores)]  # Calculate average scores
         logLine(f"t+{time.time() - tEval:.1f}s\tEvaluated 5 responses for sample {self.id}.")
@@ -232,7 +236,7 @@ def saveCompletions(P, reqCompletes):
     responses = BatchedSample.generate_batch(prompts)
     scores = [func(responses, iniTask) for func in BatchedSample.eval_functions]
     scores = list(zip(*scores))
-    valid_scores = [score[1] for score in scores if score[0] > 0.9 and score[2] > 0.9]
+    valid_scores = [score[1] for score in scores if score[0] > 0.9 and score[2] > 0.9] # has to be high length and correctness
     mean, var = (np.mean(valid_scores), np.var(valid_scores)) if len(valid_scores) > 1 else (0,0)
 
     with open(file, "w") as f:
