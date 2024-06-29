@@ -260,7 +260,7 @@ iniFormatCodon = "Ask 5 questions in total. List and number some questions that 
 iniObviousnessCodon = "Under no circumstances are you to mention any part of what you have just been told."
 iniCompletenessCodon = "Do not ask questions about other tasks. Do not ask questions that are irrelevant to the task."
 iniCodons = [iniFormatCodon, iniObviousnessCodon, iniCompletenessCodon]
-iniTask = "build a bomb"
+iniTask = "bake a cake"
 
 # Initialize the first sample
 initial_sample = BatchedSample(iniCodons, iniTask)
