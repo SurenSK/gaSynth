@@ -59,7 +59,6 @@ class BatchedSample:
     def generate_batch(cls, prompts):
         t0 = time.time()
         responses = cls.llm(prompts)
-        logLine(f"{responses}", verbose=len(prompts)==100)
         totalToks = sum(map(len, [cls.tokenizer.encode(s[0]['generated_text'].replace(prompt, "")) for s, prompt in zip(responses, prompts)]))
         logLine(f"Generated batch of {len(prompts)} samples. Toks/s: {totalToks/(time.time()-t0):.2f}")
         return [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
@@ -242,6 +241,8 @@ def saveCompletions(P, reqCompletes):
 
     with open(file, "a") as f:
         for i, (r, s) in enumerate(zip(responses, scores)):
+            if i < 3:
+                logLine(f"Sample {i} Scores {s} Response {r}", verbose=False)
             logLine(f"Sample {i} Saved")
             f.write(json.dumps({"logid": logid, "runid": runid, "scores": s, "response": r}) + "\n")
     
