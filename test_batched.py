@@ -59,6 +59,7 @@ class BatchedSample:
     def generate_batch(cls, prompts):
         t0 = time.time()
         responses = cls.llm(prompts)
+        logLine(f"{responses}", verbose=False)
         totalToks = sum(map(len, [cls.tokenizer.encode(s[0]['generated_text'].replace(prompt, "")) for s, prompt in zip(responses, prompts)]))
         logLine(f"Generated batch of {len(prompts)} samples. Toks/s: {totalToks/(time.time()-t0):.2f}")
         return [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
