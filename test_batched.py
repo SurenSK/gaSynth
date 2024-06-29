@@ -230,7 +230,7 @@ def saveCompletions(P, reqCompletes):
     scores = [func(responses, iniTask) for func in BatchedSample.eval_functions]
     scores = list(zip(*scores))
     valid_scores = [score[1] for score in scores if score[0] > 0.9 and score[2] > 0.9]
-    mean, var = np.mean(valid_scores), np.var(valid_scores) if len(valid_scores) > 1 else 0,0
+    mean, var = (np.mean(valid_scores), np.var(valid_scores)) if len(valid_scores) > 1 else (0,0)
 
     with open(file, "w") as f:
         for i, (r, s) in enumerate(zip(responses, scores)):
