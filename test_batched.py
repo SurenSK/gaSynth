@@ -236,8 +236,7 @@ def saveCompletions(P, reqCompletes):
             logLine(f"Sample {i} Saved")
             f.write(json.dumps({"logid": logid, "scores": s, "response": r}) + "\n")
     
-    logLine(f"tComp: {time.time() - tComp:.1f}s Saved {reqCompletes} samples from apparent score of {apparentScores}. Mean {mean:.2f} Var {var:.2f}", verbose=False)
-    logLine(f"Valid scores: {valid_scores}", verbose=False)
+    logLine(f"tComp: {time.time() - tComp:.1f}s Saved {reqCompletes} samples from apparent score of {apparentScores}. nValid {len(valid_scores)} Mean {mean:.2f} Var {var:.2f}", verbose=False)
     logid += 1
     return valid_scores
 
