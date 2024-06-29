@@ -236,7 +236,7 @@ def saveCompletions(P, reqCompletes):
             logLine(f"Sample {i} Saved")
             f.write(json.dumps({"logid": logid, "scores": s, "response": r}) + "\n")
     
-    logLine(f"tComp: {time.time() - tComp:.1f}s Saved {reqCompletes} samples from apparent score of {[round(f,2) for f in apparentScores]}. nValid {len(valid_scores)} Mean {mean:.2f} Var {var:.2f}", verbose=False)
+    logLine(f"t+{time.time() - tComp:.1f}s Saved {reqCompletes} samples from apparent score of {[round(f,2) for f in apparentScores]}. nValid {len(valid_scores)} Mean {mean:.2f} Var {var:.2f}", verbose=False)
     logid += 1
     return valid_scores
 
@@ -280,7 +280,7 @@ for opNum in range(reqOps):
     
     P = reformFront(P, nSample)
     logLine(f"Post Op {opNum}: {len(P)} samples in front.\n")
-    cScores = [[round(score, 3) for score in sample.scores] for sample in P]
+    cScores = [[round(score, 2) for score in sample.scores] for sample in P]
     logLine(f"t+{time.time() - tOp:.1f}s Post Op {opNum} sScores:{cScores}", verbose=False)
 
     # Save samples at halfway point and at the end
