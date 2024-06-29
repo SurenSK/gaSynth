@@ -217,9 +217,13 @@ def formPrompt(P):
     
     return ' '.join(best_codons), best_scores
 
-def saveCompletions(file, P, iniTask, reqCompletes):
+logid = 0
+def saveCompletions(P, reqCompletes):
+    global logid
+    file="output.jsonl"
     tComp = time.time()
     sysPrompt, apparentScores = formPrompt(P)
+    iniTask = P[0].task
     prompts = [f"{sysPrompt}\nYou need to perform the task of {iniTask}."] * reqCompletes
     responses = BatchedSample.generate_batch(prompts)
     scores = [func(responses, iniTask) for func in BatchedSample.eval_functions]
@@ -230,10 +234,11 @@ def saveCompletions(file, P, iniTask, reqCompletes):
     with open(file, "w") as f:
         for i, (r, s) in enumerate(zip(responses, scores)):
             logLine(f"Sample {i} Saved")
-            f.write(json.dumps({"response": r, "scores": s}) + "\n")
+            f.write(json.dumps({"logid": logid, "scores": s, "response": r}) + "\n")
     
     logLine(f"tComp: {time.time() - tComp:.1f}s Saved {reqCompletes} samples from apparent score of {apparentScores}. Mean {mean:.2f} Var {var:.2f}", verbose=False)
     logLine(f"Valid scores: {valid_scores}", verbose=False)
+    logid += 1
     return valid_scores
 
 tTotal = time.time()
@@ -263,7 +268,7 @@ initial_sample.evaluate()
 P.append(initial_sample)
 logLine("First sample evaluated and added to front.", verbose=False)
 validScores = []
-validScores.append(saveCompletions("output_0_prompt.jsonl", P, iniTask, reqCompletes))
+validScores.append(saveCompletions(P, reqCompletes))
 tOpt = time.time()
 for opNum in range(reqOps):
     tOp = time.time()
@@ -281,9 +286,9 @@ for opNum in range(reqOps):
 
     # Save samples at halfway point and at the end
     if opNum == reqOps // 2 - 1:
-        validScores.append(saveCompletions("output_50_prompt.jsonl", P, iniTask, reqCompletes))
+        validScores.append(saveCompletions(P, reqCompletes))
     if opNum == reqOps - 1:
-        validScores.append(saveCompletions("output_100_prompt.jsonl", P, iniTask, reqCompletes))
+        validScores.append(saveCompletions(P, reqCompletes))
 
 logLine(f"tOpt: {time.time() - tOpt:.1f}s", verbose=False)
 logLine(f"Final front size: {len(P)}")
