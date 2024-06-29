@@ -34,7 +34,7 @@ class BatchedSample:
                 cache_dir=".",
                 token=token
             )
-            model.generation_config.cache_implementation = "static"
+            # model.generation_config.cache_implementation = "static"
             model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
             logLine("Model loaded.")
             
