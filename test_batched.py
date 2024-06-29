@@ -285,11 +285,14 @@ for opNum in range(reqOps):
     nSample = op(P)
     
     nSample.evaluate()
+    skip = False
+    if nSample.scores[2] == 0.0:
+        skip = True
     
     P = reformFront(P, nSample)
     logLine(f"Post Op {opNum}: {len(P)} samples in front.\n")
     cScores = [[round(score, 2) for score in sample.scores] for sample in P]
-    logLine(f"t+{time.time() - tOp:.1f}s Post Op {opNum} sScores:{cScores}", verbose=False)
+    logLine(f"t+{time.time() - tOp:.1f}s Post Op {opNum} Skip {skip} sScores:{cScores}", verbose=False)
 
     # Save samples at halfway point and at the end
     if opNum == reqOps // 2 - 1:
