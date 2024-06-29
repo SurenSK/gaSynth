@@ -6,6 +6,7 @@ import re
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from sentence_transformers import SentenceTransformer, util
 import numpy as np
+import torch
 runid = f"{time.time():.0f}"
 logVerbose = False
 def logLine(l, verbose=True):
@@ -33,6 +34,8 @@ class BatchedSample:
                 cache_dir=".",
                 token=token
             )
+            model.generation_config.cache_implementation = "static"
+            model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
             logLine("Model loaded.")
             
             cls.llm = pipeline("text-generation", model=model, tokenizer=cls.tokenizer, batch_size=cls.batch_size, max_new_tokens=200)
