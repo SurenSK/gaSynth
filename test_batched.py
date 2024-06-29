@@ -6,6 +6,7 @@ import re
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from sentence_transformers import SentenceTransformer, util
 import numpy as np
+runid = f"{time.time():.0f}"
 logVerbose = False
 def logLine(l, verbose=True):
     if logVerbose or not verbose:
@@ -229,19 +230,19 @@ def saveCompletions(P, reqCompletes):
     scores = [func(responses, iniTask) for func in BatchedSample.eval_functions]
     scores = list(zip(*scores))
     valid_scores = [score[1] for score in scores if score[0] > 0.9 and score[2] > 0.9]
-    mean, var = np.mean(valid_scores), np.var(valid_scores)
+    mean, var = np.mean(valid_scores), np.var(valid_scores) if len(valid_scores) > 1 else 0,0
 
     with open(file, "w") as f:
         for i, (r, s) in enumerate(zip(responses, scores)):
             logLine(f"Sample {i} Saved")
-            f.write(json.dumps({"logid": logid, "scores": s, "response": r}) + "\n")
+            f.write(json.dumps({"logid": logid, "runid": runid, "scores": s, "response": r}) + "\n")
     
     logLine(f"t+{time.time() - tComp:.1f}s Saved {reqCompletes} samples from apparent score of {[round(f,2) for f in apparentScores]}. nValid {len(valid_scores)} Mean {mean:.2f} Var {var:.2f}", verbose=False)
     logid += 1
     return valid_scores
 
 tTotal = time.time()
-logLine("***STARTING***", verbose=False)
+logLine(f"***STARTING*** {runid}", verbose=False)
 BatchedSample.set_llm("mistralai/Mistral-7B-Instruct-v0.2", "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")
 logLine("Adding evaluation functions...")
 BatchedSample.add_eval_function(lengthMetric)
