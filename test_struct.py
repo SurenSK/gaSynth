@@ -154,8 +154,9 @@ def sampleFront(P, n):
 def mutateFront(P):
     t0 = time.time()
     def mut(a_codon):
-        prompt = f"You are a helpful AI writing assistant. Reword this sentence without changing the meaning: {a_codon}. Certainly, the reworded sentence is:"
+        prompt = f"Rewrite the sentence in different words. Provide a JSON response with a 'reworded' property. Use <result></result> tags around the JSON. No extra text. Sentence to reword: {a_codon}"
         resp = BatchedSample.generate_batch([prompt])[0]
+        resp = extract_json(resp, ["reworded"])["reworded"]
         logLine(f"*********************\nMutated {a_codon} to get {resp}.\n*********************", verbose=False)
         return resp
     A = sampleFront(P, 1)[0]
