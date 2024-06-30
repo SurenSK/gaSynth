@@ -65,5 +65,5 @@ for prompt in prompts:
 responses = llm(all_prompts)
 
 for i, response in enumerate(responses):
-    extracted = extract_json(response['generated_text'])
+    extracted = extract_json(response[0]['generated_text'])
     logLine(f"{i} Prompt: {all_prompts[i]}\nResponse: {extracted}\n***********************\n")
