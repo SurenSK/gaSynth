@@ -52,7 +52,6 @@ prompts = [
 def extract_json(text):
     try:
         json_string = text.split('<result>')[1].split('</result>')[0].strip()
-        logLine(f"Extracted JSON: #{json_string}#")
         parsed_json = json.loads(json_string)
         return parsed_json["reworded"]
     except (IndexError, ValueError, json.JSONDecodeError, KeyError) as e:
@@ -66,6 +65,7 @@ for prompt in prompts:
 responses = llm(all_prompts)
 
 for i, response in enumerate(responses):
-    text = response[0]['generated_text']
-    extracted = extract_json(text)
-    logLine(f"{i} Prompt: {all_prompts[i]}Response:{text}\nJSON: {extracted}\n***********************\n")
+    prompt = all_prompts[i]
+    response_ = response[0]['generated_text'].replace(prompt, "").strip()
+    extracted = extract_json(response_)
+    logLine(f"{i} #Prompt: {prompt}\n#Response:{extracted}\nJSON: {extracted}\n***********************\n")
