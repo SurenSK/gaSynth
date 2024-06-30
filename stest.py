@@ -51,10 +51,9 @@ prompts = [
 ]
 def extract_json(text):
     try:
-        start = text.index('<result>') + 8
-        end = text.index('</result>')
-        json_str = text[start:end].strip()
-        return json.loads(json_str)
+        json_string = text.split('<result>')[1].split('</result>')[0]
+        parsed_json = json.loads(json_string.strip())
+        return json.loads(parsed_json)
     except (ValueError, json.JSONDecodeError):
         return "ERROR"
     
