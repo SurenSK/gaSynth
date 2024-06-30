@@ -9,8 +9,9 @@ import numpy as np
 import torch
 runid = f"{time.time():.0f}"
 logVerbose = False
+logOp = True
 def logLine(l, verbose=True):
-    if logVerbose or not verbose:
+    if logVerbose or not verbose or logOp:
         with open("log.txt", "a") as log_file:
             log_file.write(str(l) + "\n")
 
@@ -61,7 +62,12 @@ class BatchedSample:
         responses = cls.llm(prompts)
         totalToks = sum(map(len, [cls.tokenizer.encode(s[0]['generated_text'].replace(prompt, "")) for s, prompt in zip(responses, prompts)]))
         logLine(f"Generated batch of {len(prompts)} samples. Toks/s: {totalToks/(time.time()-t0):.2f}")
-        return [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
+        
+        responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
+        # print first 3 prompt, response pairs
+        for i in range(3):
+            logLine(f"******************************************\nPrompt: {prompts[i]}\nResponse: {responses[i]}\n******************************************")
+        return responses
 
     def __init__(self, codons, task):
         if not BatchedSample.llm:
@@ -143,7 +149,7 @@ def mutateFront(P):
         return resp
     A = sampleFront(P, 1)[0]
     nCodons = [a_codon if random.random() > 0.5 else mut(a_codon) for a_codon in A.codons]
-    logLine(f"t+{time.time() - t0:.1f}s\tMutated {A.id} to get new codons.")
+    # logLine(f"t+{time.time() - t0:.1f}s\tMutated {A.id} to get new codons.")
     B = BatchedSample(nCodons, A.task)
     return B
 
@@ -168,7 +174,7 @@ def breedFrontStoch(P):
 def save_to_jsonl(queue, filename):
     with open(filename, 'a') as f:
         for i, s in enumerate(queue):
-            logLine(f"Sample {i}/{len(queue)} - {s}")
+            # logLine(f"Sample {i}/{len(queue)} - {s}")
             json_string = json.dumps(s.to_dict())
             f.write(json_string + '\n')
 
@@ -241,8 +247,6 @@ def saveCompletions(P, reqCompletes):
 
     with open(file, "a") as f:
         for i, (r, s) in enumerate(zip(responses, scores)):
-            if i < 3:
-                logLine(f"Sample {i} Scores {s} Response {r}", verbose=False)
             logLine(f"Sample {i} Saved")
             f.write(json.dumps({"logid": logid, "runid": runid, "scores": s, "response": r}) + "\n")
     
@@ -279,6 +283,7 @@ logLine("First sample evaluated and added to front.", verbose=False)
 validScores = []
 validScores.append(saveCompletions(P, reqCompletes))
 tOpt = time.time()
+logOp = False
 for opNum in range(reqOps):
     tOp = time.time()
     logLine(f"Pre Op {opNum}: {len(P)} samples in front.")
