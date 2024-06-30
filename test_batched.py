@@ -65,8 +65,8 @@ class BatchedSample:
         
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         # print first 3 prompt, response pairs
-        for i in range(3):
-            logLine(f"******************************************\nPrompt: {prompts[i]}\nResponse: {responses[i]}\n******************************************")
+        # for i in range(3):
+        #     logLine(f"******************************************\nPrompt: {prompts[i]}\nResponse: {responses[i]}\n******************************************")
         return responses
 
     def __init__(self, codons, task):
