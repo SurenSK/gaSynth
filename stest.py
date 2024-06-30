@@ -18,7 +18,7 @@ def set_llm(model_id):
         raise ValueError("HUGGINGFACE_TOKEN is not set in the environment.")
     
     tokenizer = AutoTokenizer.from_pretrained(model_id, token=token)
-    model = AutoModelForCausalLM.from_pretrained(model_id, token=token)
+    model = AutoModelForCausalLM.from_pretrained(model_id, token=token, cache_dir=".")
     model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
     logLine("Model loaded.")
     
