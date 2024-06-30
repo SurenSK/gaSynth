@@ -52,6 +52,7 @@ prompts = [
 def extract_json(text):
     try:
         json_string = text.split('<result>')[1].split('</result>')[0].strip()
+        logLine(f"Extracted JSON: #{json_string}#")
         parsed_json = json.loads(json_string)
         return parsed_json["reworded"]
     except (IndexError, ValueError, json.JSONDecodeError, KeyError) as e:
