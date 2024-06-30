@@ -4,6 +4,7 @@ import torch
 from dotenv import load_dotenv
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from tqdm import tqdm
+from sentence_transformers import SentenceTransformer, util
 
 # Load environment variables from .env file
 load_dotenv()
@@ -28,6 +29,7 @@ def set_llm(model_id):
     return llm
 
 llm = set_llm("mistralai/Mistral-7B-Instruct-v0.2")
+embeddingModel = SentenceTransformer("all-MiniLM-L6-v2")
 
 test_topics = [
     "Baking a cake",
@@ -52,6 +54,14 @@ def extract_json(text):
         # return actual error message
         return str(e)
 
+def metricObviousness(responses, task):
+    embeddings = embeddingModel.encode(responses + [task])
+    task_embedding = embeddings[-1]
+    response_embeddings = embeddings[:-1]
+    
+    similarities = util.pytorch_cos_sim(response_embeddings, task_embedding)
+    return similarities.squeeze().tolist()
+
 all_prompts = []
 for prompt in prompts:
     for topic in test_topics:
@@ -61,6 +71,19 @@ responses = llm(all_prompts)
 
 for i, response in enumerate(responses):
     prompt = all_prompts[i]
-    raw_response = response[0]['generated_text']
-    extracted = extract_json(raw_response.replace(prompt, "").strip())
-    logLine(f"{i} #Prompt: {prompt}\n#Response:{raw_response}\n#JSON: {extracted}\n***********************\n")
+    response_ = response[0]['generated_text'].replace(prompt, "").strip()
+    extracted = extract_json(response_)
+    
+    if isinstance(extracted, dict):
+        questions = [extracted[f'question{j}'] for j in range(1, 6)]
+        task = prompt.split("Task: ")[1]
+        similarities = metricObviousness(questions, task)
+        
+        logLine(f"{i} #Prompt: {prompt}")
+        logLine("#Response:")
+        for j, question in enumerate(questions):
+            logLine(f"Question {j+1}: {question}")
+            logLine(f"Similarity: {similarities[j]:.4f}")
+        logLine("***********************\n")
+    else:
+        logLine(f"{i} #Prompt: {prompt}\n#Error: {extracted}\n***********************\n")
