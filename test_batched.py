@@ -145,7 +145,7 @@ def mutateFront(P):
     def mut(a_codon):
         prompt = f"You are a helpful AI writing assistant. Reword this sentence without changing the meaning: {a_codon}. Certainly, the reworded sentence is:"
         resp = BatchedSample.generate_batch([prompt])[0]
-        logLine(f"Mutated {a_codon} to get {resp}.")
+        logLine(f"*********************\nMutated {a_codon} to get {resp}.\n*********************", verbose=False)
         return resp
     A = sampleFront(P, 1)[0]
     nCodons = [a_codon if random.random() > 0.5 else mut(a_codon) for a_codon in A.codons]
