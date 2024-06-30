@@ -51,10 +51,10 @@ prompts = [
 ]
 def extract_json(text):
     try:
-        json_string = text.split('<result>')[1].split('</result>')[0]
-        parsed_json = json.loads(json_string.strip())
-        return json.loads(parsed_json)
-    except (ValueError, json.JSONDecodeError):
+        json_string = text.split('<result>')[1].split('</result>')[0].strip()
+        parsed_json = json.loads(json_string)
+        return parsed_json["reworded"]
+    except (IndexError, ValueError, json.JSONDecodeError, KeyError):
         return "ERROR"
     
 all_prompts = []
