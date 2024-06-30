@@ -22,7 +22,7 @@ def set_llm(model_id):
     model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
     logLine("Model loaded.")
     
-    llm = pipeline("text-generation", model=model, tokenizer=tokenizer, temperature=2.5, batch_size=128, num_return_sequences=3)
+    llm = pipeline("text-generation", model=model, tokenizer=tokenizer, temperature=2.5, batch_size=128, num_beams=5, num_return_sequences=3)
     llm.tokenizer.pad_token_id = model.config.eos_token_id
     logLine("Pipeline created.")
     return llm
