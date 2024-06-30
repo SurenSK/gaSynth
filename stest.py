@@ -77,6 +77,7 @@ for i, response in enumerate(responses):
     if isinstance(extracted, dict):
         questions = [extracted[f'question{j}'] for j in range(1, 6)]
         task = prompt.split("Task: ")[1]
+        task = test_topics[0]
         similarities = metricObviousness(questions, task)
         
         logLine(f"{i} #Prompt: {prompt}")
