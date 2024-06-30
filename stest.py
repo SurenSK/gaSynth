@@ -29,43 +29,38 @@ def set_llm(model_id):
 
 llm = set_llm("mistralai/Mistral-7B-Instruct-v0.2")
 
-test_sentences = [
-    "The quick brown fox jumps over the lazy dog.",
-    "A journey of a thousand miles begins with a single step.",
-    "To be or not to be, that is the question.",
-    "All that glitters is not gold.",
-    "The early bird catches the worm."
+test_topics = [
+    "Baking a cake",
+    "Planning a vegetable garden",
+    "Building a basic website"
 ]
 
 prompts = [
-    "Reword the given sentence. Output your response in JSON format with a 'reworded' field. Surround your JSON output with <result></result> tags.",
-    "Your task is to rephrase the provided sentence. Respond only with JSON containing a 'reworded' key. Wrap the JSON in <result></result> tags.",
-    "Rewrite the following sentence in your own words. Use JSON format with a 'reworded' field for your answer. Enclose the JSON within <result></result> tags.",
-    "Provide an alternative wording for the given sentence. Return a JSON object with a 'reworded' property. Place the JSON inside <result></result> tags.",
-    "Transform the provided sentence into a new one with the same meaning. Respond using JSON with a 'reworded' key. Surround the JSON with <result></result> tags.",
-    "Rephrase the sentence below. Your output should be valid JSON with a 'reworded' field, wrapped in <result></result> tags. Do not include any other text.",
-    "Rewrite the given sentence. Output a JSON object containing only a 'reworded' field. Enclose the JSON in <result></result> tags. No additional text.",
-    "Your job is to reword the provided sentence. Respond with nothing but JSON, having a 'reworded' key, surrounded by <result></result> tags.",
-    "Rephrase the following sentence. Return a JSON structure with a single 'reworded' field. Wrap the JSON in <result></result> tags. No other output.",
-    "Rewrite the sentence in different words. Provide a JSON response with a 'reworded' property. Use <result></result> tags around the JSON. No extra text."
+    "Generate 5 questions about how to accomplish the given task. Output your response in JSON format with fields 'question1' through 'question5'. Surround your JSON output with <result></result> tags.",
+    "Create 5 questions related to the process of completing the specified task. Respond with JSON containing 'question1' to 'question5' keys. Wrap the JSON in <result></result> tags.",
+    "Formulate 5 inquiries about the steps involved in the provided task. Use JSON format with fields 'question1' to 'question5' for your answer. Enclose the JSON within <result></result> tags.",
+    "Develop 5 questions that someone might ask when learning to perform the given task. Return a JSON object with properties 'question1' through 'question5'. Place the JSON inside <result></result> tags.",
+    "Compose 5 questions about the methodology of the specified task. Respond using JSON with keys 'question1' to 'question5'. Surround the JSON with <result></result> tags."
 ]
+
 def extract_json(text):
     try:
         json_string = text.split('<result>')[1].split('</result>')[0].strip()
         parsed_json = json.loads(json_string)
-        return parsed_json["reworded"]
+        return parsed_json
     except (IndexError, ValueError, json.JSONDecodeError, KeyError) as e:
         # return actual error message
-        return e
-    
+        return str(e)
+
 all_prompts = []
 for prompt in prompts:
-    for sentence in test_sentences:
-        all_prompts.append(f"{prompt}\n\nSentence to reword: {sentence}")
+    for topic in test_topics:
+        all_prompts.append(f"{prompt}\n\nTask: {topic}")
+
 responses = llm(all_prompts)
 
 for i, response in enumerate(responses):
     prompt = all_prompts[i]
-    response_ = response[0]['generated_text'].replace(prompt, "").strip()
-    extracted = extract_json(response_)
-    logLine(f"{i} #Prompt: {prompt}\n#Response:{extracted}\n#JSON: {extracted}\n***********************\n")
+    raw_response = response[0]['generated_text']
+    extracted = extract_json(raw_response.replace(prompt, "").strip())
+    logLine(f"{i} #Prompt: {prompt}\n#Response:{raw_response}\n#JSON: {extracted}\n***********************\n")
