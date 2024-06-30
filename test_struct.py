@@ -216,7 +216,11 @@ def correctnessMetric(responses, task):
     scores = []
     for i in range(0, len(all_responses), 3):
         group = all_responses[i:i+3]
-        score = sum(1.0 if 'yes' in resp["relevant"] else 0.0 for resp in group) / 3
+        try:
+            score = sum(1.0 if 'yes' in resp["relevant"] else 0.0 for resp in group) / 3
+        except Exception as e:
+            logLine(f"Error calculating correctness metric: {str(e)} {group}")
+            score = 0.0
         scores.append(score)
     
     logLine(f"t+{time.time() - t0:.1f}s\tCalculated correctness metric for {len(responses)} responses")
