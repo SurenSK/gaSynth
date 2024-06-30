@@ -4,3 +4,5 @@ DeceptionIRB.docx
 DeceptionConsent.docx
 data.txt
 samples.jsonl
+minillm.py
+.env
