@@ -68,4 +68,4 @@ for i, response in enumerate(responses):
     prompt = all_prompts[i]
     response_ = response[0]['generated_text'].replace(prompt, "").strip()
     extracted = extract_json(response_)
-    logLine(f"{i} #Prompt: {prompt}\n#Response:{extracted}\nJSON: {extracted}\n***********************\n")
+    logLine(f"{i} #Prompt: {prompt}\n#Response:{extracted}\n#JSON: {extracted}\n***********************\n")
