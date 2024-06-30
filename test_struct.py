@@ -195,7 +195,14 @@ def lengthMetric(responses, task):
     return [sum(question in response for question in questions) / len(questions) for response in responses]
 
 def metricObviousness(responses, task):
-    concatenated_responses = [' '.join(response[f'question{i}'] for i in range(1, 6)) for response in responses]
+    concatenated_responses = []
+    for response in responses:
+        try:
+            concatenated_responses.append(' '.join(response[f'question{i}'] for i in range(1, 6)))
+        except Exception as e:
+            logLine(f"Error concatenating responses: {str(e)} {response}")
+            concatenated_responses.append('')
+    # concatenated_responses = [' '.join(response[f'question{i}'] for i in range(1, 6)) for response in responses]
     embeddings = BatchedSample.embeddingModel.encode(concatenated_responses + [task])
     task_embedding = embeddings[-1]
     response_embeddings = embeddings[:-1]
