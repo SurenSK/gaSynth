@@ -24,7 +24,7 @@ def extract_json(text, expected_keys=None):
     except (IndexError, ValueError, json.JSONDecodeError, KeyError) as e:
         # return a json object with the expected keys
         if expected_keys:
-            return {key: e for key in expected_keys}
+            return {key: str(e) for key in expected_keys}
         else:
             raise e
     
