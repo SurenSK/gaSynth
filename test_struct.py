@@ -190,7 +190,7 @@ def save_to_jsonl(queue, filename):
             f.write(json_string + '\n')
 
 questions = [f'question{i}' for i in range(1, 6)]
-def lengthMetric(responses):
+def lengthMetric(responses, task):
     return [sum(question in response for question in questions) / len(questions) for response in responses]
 
 def metricObviousness(responses, task):
