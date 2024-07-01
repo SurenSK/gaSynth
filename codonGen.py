@@ -22,7 +22,7 @@ def set_llm(model_id):
     model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
     logLine("Model loaded.")
     
-    llm = pipeline("text-generation", model=model, tokenizer=tokenizer, batch_size=BATCH_SIZE, max_new_tokens=256)
+    llm = pipeline("text-generation", model=model, tokenizer=tokenizer, temperature=2.5, batch_size=BATCH_SIZE, max_new_tokens=256)
     llm.tokenizer.pad_token_id = model.config.eos_token_id
     logLine("Pipeline created.")
     return llm
@@ -80,20 +80,21 @@ def generate_rewords(sentences, codon_type, target_count):
     sentence_cycle = cycle(sentences)
     prompt_cycle = cycle(prompts)
     while len(valid_rewords) < target_count:
-        # all_prompts = []
+        repeats = 0
+        malformed = 0
         all_prompts = [f"{next(prompt_cycle)}\n\nSentence to reword: {next(sentence_cycle)}" for _ in range(BATCH_SIZE)]
-        # for _ in range(BATCH_SIZE):
-        #     sentence = random.choice(sentences)
-        #     prompt = random.choice(prompts)
-        #     all_prompts.append(f"{prompt}\n\nSentence to reword: {sentence}")
         responses = llm(all_prompts)
 
         for i,response in enumerate(responses):
             extracted = extract_json(response[0]['generated_text'].replace(all_prompts[i], "").strip())
-            if not isinstance(extracted, Exception) and extracted not in valid_rewords:
+            if isinstance(extracted, Exception):
+                malformed += 1
+            elif extracted in valid_rewords:
+                repeats += 1
+            else:
                 valid_rewords.append(extracted)
-        
-        logLine(f"Current {codon_type} rewords: {len(valid_rewords)}")
+            
+        logLine(f"Current {codon_type}#{len(valid_rewords)} - Repeats: {repeats} - Malformed: {malformed}")
     valid_rewords = [{"codon": codon_type, "text": reword} for reword in valid_rewords]
     return valid_rewords
 
