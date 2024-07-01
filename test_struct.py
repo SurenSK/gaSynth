@@ -16,17 +16,25 @@ def logLine(l, verbose=True):
         with open("log.txt", "a") as log_file:
             log_file.write(str(l) + "\n")
 
+jsonAttempts = 0
+jsonSuccesses = 0
 def extract_json(text, expected_keys=None):
+    global jsonAttempts, jsonSuccesses
+    jsonAttempts += 1
+    jsonSuccess = True
     try:
         json_string = text.split('<result>')[1].split('</result>')[0].strip()
         parsed_json = json.loads(json_string)
         if expected_keys:
             for key in expected_keys:
                 if key not in parsed_json:
+                    jsonSuccesses = False
                     parsed_json[key] = f"Key '{key}' not found in JSON object."
+        if jsonSuccess:
+            jsonSuccesses += 1
         return parsed_json
     except (IndexError, ValueError, json.JSONDecodeError, KeyError, TypeError) as e:
-        logLine(f"Error extracting JSON: {str(e)} {text}")
+        logLine(f"****************************\nError extracting JSON: {str(e)}\n{text}\n***************************")
         # return a json object with the expected keys
         if expected_keys:
             return {key: str(e) for key in expected_keys}
@@ -319,7 +327,7 @@ for opNum in range(reqOps):
     P = reformFront(P, nSample)
     logLine(f"Post Op {opNum}: {len(P)} samples in front.\n")
     cScores = [[round(score, 2) for score in sample.scores] for sample in P]
-    logLine(f"t+{time.time() - tOp:.1f}s Post Op {opNum} Skip {skip} sScores:{cScores}", verbose=False)
+    logLine(f"t+{time.time() - tOp:.1f}s Post Op {opNum} JSON SuccessRate {jsonSuccesses/jsonAttempts} sScores:{cScores}", verbose=False)
 
     # Save samples at halfway point and at the end
     if opNum == reqOps // 2 - 1:
