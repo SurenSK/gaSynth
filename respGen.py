@@ -13,7 +13,7 @@ load_dotenv()
 BATCH_SIZE = 16
 
 def logLine(l, verbose=True):
-    with open("log.txt", "a") as log_file:
+    with open("logR.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
 
 def set_llm(model_id):
@@ -136,7 +136,7 @@ def main():
     with open('generated_questions.json', 'w') as f:
         json.dump(questions, f, indent=2)
 
-    print(f"Generated {len(questions)} sets of questions and saved them to 'generated_questions.json'.")
+    logLine(f"Generated {len(questions)} sets of questions and saved them to 'generated_questions.json'.")
 
 if __name__ == "__main__":
     main()
