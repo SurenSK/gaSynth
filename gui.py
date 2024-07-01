@@ -87,15 +87,15 @@ class TextRatingApp:
         label.config(text=str(int_value))
 
     def load_samples(self):
-        print("Loading samples from generated_responses.json")
+        print("Loading samples from generated_questions.json")
         try:
-            with open('generated_responses.json', 'r') as file:
+            with open('generated_questions.json', 'r') as file:
                 return json.load(file)
         except FileNotFoundError:
-            print("generated_responses.json file not found")
+            print("generated_questions.json file not found")
             raise
         except json.JSONDecodeError:
-            print("Error decoding JSON in generated_responses.json")
+            print("Error decoding JSON in generated_questions.json")
             raise
 
     def display_current_sample(self):
