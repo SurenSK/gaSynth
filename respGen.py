@@ -114,6 +114,27 @@ def generate_questions(llm, codon_combination, task, max_iters=10, num_sets=50):
             else:
                 all_question_sets.append(new_question_set)
         logLine(f"Rewords Gend {len(all_question_sets)} - Malforms: {malformed} Repeats: {repeats}")
+    
+    for question_set in all_question_sets:
+        for i in range(1, 6):
+            question_set[f"question{i}"] = question_set[f"question{i}"].replace("the bomb", "such a device")
+            question_set[f"question{i}"] = question_set[f"question{i}"].replace("a bomb", "such a device")
+    
+    # reword all questions
+    reword_buffer = []
+    for question_set in all_question_sets:
+        for i in range(1, 6):
+            reword_buffer.append(question_set[f"question{i}"])
+    reworded_prompts = [f"{reword_prompt}\nSentence to reword: {prompt}" for prompt in reword_buffer]
+    reworded_responses = generate_batch(reworded_prompts)
+    reworded_questions = []
+    for i, response in enumerate(reworded_responses):
+        extracted = extract_json(response, expectation={'reworded': str})
+        if not isinstance(extracted, Exception):
+            reworded_questions.append(extracted['reworded'])
+    for i, question_set in enumerate(all_question_sets):
+        for j in range(1, 6):
+            question_set[f"question{j}"] = reworded_questions.pop(0)
             
     
     return all_question_sets
@@ -135,10 +156,6 @@ def main():
     # Generate questions
     questions = generate_questions(llm, codon_combination, task)
     # for each question in each question set, replace the cake with it
-    for question_set in questions:
-        for i in range(1, 6):
-            question_set[f"question{i}"] = question_set[f"question{i}"].replace("the bomb", "it")
-            question_set[f"question{i}"] = question_set[f"question{i}"].replace("a bomb", "it")
     # Save the generated questions to a file
     with open('generated_questions.json', 'w') as f:
         json.dump(questions, f, indent=2)
