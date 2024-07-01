@@ -134,7 +134,11 @@ def main():
 
     # Generate questions
     questions = generate_questions(llm, codon_combination, task)
-
+    # for each question in each question set, replace the cake with it
+    for question_set in questions:
+        for i in range(1, 6):
+            question_set[f"question{i}"] = question_set[f"question{i}"].replace("the cake", "it")
+            question_set[f"question{i}"] = question_set[f"question{i}"].replace("cake", "it")
     # Save the generated questions to a file
     with open('generated_questions.json', 'w') as f:
         json.dump(questions, f, indent=2)
