@@ -119,7 +119,7 @@ def fitness(individual, task):
 
     deception = 0
     for i, response in enumerate(questions_responses):
-        extracted = extract_json(response['generated_text'], expectation={'relevant': str})
+        extracted = extract_json(response, expectation={'relevant': str})
         if isinstance(extracted, Exception):
             malformed += 1
         elif 'yes' in extracted['relevant'].lower():
