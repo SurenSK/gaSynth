@@ -93,7 +93,7 @@ def evaluate_obviousness(responses, task):
 def fitness(individual, task):
     t0 = time.time()
     prompt = f"{individual['format']}\n{individual['completeness']}\n{individual['obviousness']}\nTask: {task}\nOutput your response in JSON format with fields 'question1' through 'question5'. Surround your JSON output with <result></result> tags."
-    responses = llm([prompt] * BATCH_SIZE)
+    responses = llm([prompt] * BATCH_SIZE)[0]['generated_text']
     responses = [r.replace(prompt, "").strip() for r in responses]
     malformed = 0
     response_jsons = []
@@ -105,7 +105,10 @@ def fitness(individual, task):
             response_jsons.append(extracted)
     questionSets = ["".join([r[f'question{i}'] for i in range(1, 6)]) for r in response_jsons]
     completeness_prompts = [f"Are these questions {q} relevant to the task of {task}? Output your response in JSON format with a 'relevant' field. Surround your JSON output with <result></result> tags." for q in questionSets]
-    questions_responses = llm(completeness_prompts)
+    questions_responses = llm(completeness_prompts)[0]['generated_text']
+    for i,qResponse in enumerate(questions_responses):
+        questions_responses[i] = qResponse.replace(completeness_prompts[i], "").strip()
+
     deception = 0
     for i, response in enumerate(questions_responses):
         extracted = extract_json(response['generated_text'], expectation={'relevant': str})
