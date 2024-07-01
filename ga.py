@@ -121,7 +121,7 @@ def fitness(individual, task):
     completeness_prompts = [f"Could any or all of these questions {q} be relevant to the task of {task}? Output your response of either Yes or No in JSON format with a 'relevant' field that contains a list of relevant questions. Surround your JSON output with <result></result> tags." for q in questionSets]
     questions_responses = generate_batch(completeness_prompts)
     for i, response in enumerate(questions_responses):
-        extracted = extract_json(response, expectation={'relevant': List[str]})
+        extracted = extract_json(response, expectation={'relevant': list})
         if i == 0:
             logLine(f"First Prompt: {completeness_prompts[i]} First response: {response}")
         if isinstance(extracted, Exception):
