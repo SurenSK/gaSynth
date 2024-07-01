@@ -13,12 +13,12 @@ class TextRatingApp:
 
         try:
             self.samples = self.load_samples()
-            print(f"Loaded {len(self.samples)} samples")
+            print(f"Loaded {len(self.samples)} sample sets")
         except Exception as e:
             print(f"Error loading samples: {e}")
             sys.exit(1)
 
-        self.current_index = 0
+        self.current_set_index = 0
 
         # Name input
         name_frame = ttk.Frame(master)
@@ -32,18 +32,22 @@ class TextRatingApp:
         content_frame = ttk.Frame(master)
         content_frame.pack(pady=10, fill=tk.BOTH, expand=True)
 
-        # Text display
-        self.text_display = tk.Text(content_frame, height=10, width=50, wrap=tk.WORD)
-        self.text_display.grid(row=0, column=0, rowspan=5, padx=(0, 10))
-        self.text_display.config(state=tk.DISABLED)
-
-        # Relevance radio buttons
+        # Text displays and radio buttons
+        self.text_displays = []
         self.relevance_vars = []
         for i in range(5):
+            row_frame = ttk.Frame(content_frame)
+            row_frame.pack(fill=tk.X, pady=5)
+
+            text_display = tk.Text(row_frame, height=3, width=50, wrap=tk.WORD)
+            text_display.pack(side=tk.LEFT, padx=(0, 10))
+            text_display.config(state=tk.DISABLED)
+            self.text_displays.append(text_display)
+
             var = tk.StringVar(value="0")
             self.relevance_vars.append(var)
-            ttk.Radiobutton(content_frame, text="Not Relevant", variable=var, value="0").grid(row=i, column=1, sticky="w")
-            ttk.Radiobutton(content_frame, text="Relevant", variable=var, value="1").grid(row=i, column=2, sticky="w")
+            ttk.Radiobutton(row_frame, text="Not Relevant", variable=var, value="0").pack(side=tk.LEFT)
+            ttk.Radiobutton(row_frame, text="Relevant", variable=var, value="1").pack(side=tk.LEFT)
 
         # Deceptiveness scale
         ttk.Label(master, text="Deceptiveness:").pack()
@@ -86,8 +90,7 @@ class TextRatingApp:
         print("Loading samples from generated_responses.json")
         try:
             with open('generated_responses.json', 'r') as file:
-                data = json.load(file)
-                return [data[f"question{i}"] for i in range(1, 6)]
+                return json.load(file)
         except FileNotFoundError:
             print("generated_responses.json file not found")
             raise
@@ -96,38 +99,41 @@ class TextRatingApp:
             raise
 
     def display_current_sample(self):
-        print(f"Displaying sample {self.current_index + 1}")
-        self.text_display.config(state=tk.NORMAL)
-        self.text_display.delete(1.0, tk.END)
-        for i, question in enumerate(self.samples, start=1):
-            self.text_display.insert(tk.END, f"{i}. {question}\n\n")
-        self.text_display.config(state=tk.DISABLED)
+        print(f"Displaying sample set {self.current_set_index + 1}")
+        current_set = self.samples[self.current_set_index]
+        for i in range(5):
+            question_key = f"question{i+1}"
+            text_display = self.text_displays[i]
+            text_display.config(state=tk.NORMAL)
+            text_display.delete(1.0, tk.END)
+            text_display.insert(tk.END, f"{i+1}. {current_set[question_key]}")
+            text_display.config(state=tk.DISABLED)
 
     def save_ratings(self):
         deceptiveness = self.deceptiveness_var.get()
         completeness = self.completeness_var.get()
         relevance = ''.join([var.get() for var in self.relevance_vars])
         name = self.name_var.get() or "Anonymous"
-        print(f"Saving ratings: Name={name}, Deceptiveness={deceptiveness}, Completeness={completeness}, Relevance={relevance}")
+        print(f"Saving ratings: Name={name}, Set={self.current_set_index + 1}, Deceptiveness={deceptiveness}, Completeness={completeness}, Relevance={relevance}")
         try:
             with open('data.txt', 'a') as file:
-                file.write(f"[{name}, Sample{self.current_index + 1}, {deceptiveness}, {completeness}, {relevance}]\n")
+                file.write(f"[{name}, Set{self.current_set_index + 1}, {deceptiveness}, {completeness}, {relevance}]\n")
         except IOError as e:
             print(f"Error saving ratings: {e}")
 
     def next_sample(self):
-        if self.current_index < len(self.samples) - 1:
-            print("Next button clicked")
-            self.save_ratings()
-            self.current_index += 1
+        print("Next button clicked")
+        self.save_ratings()
+        if self.current_set_index < len(self.samples) - 1:
+            self.current_set_index += 1
             self.display_current_sample()
             self.reset_scales()
             self.update_button_states()
 
     def previous_sample(self):
-        if self.current_index > 0:
-            print("Previous button clicked")
-            self.current_index -= 1
+        print("Previous button clicked")
+        if self.current_set_index > 0:
+            self.current_set_index -= 1
             self.display_current_sample()
             self.reset_scales()
             self.update_button_states()
@@ -141,8 +147,8 @@ class TextRatingApp:
             var.set("0")
 
     def update_button_states(self):
-        self.prev_button.config(state=tk.NORMAL if self.current_index > 0 else tk.DISABLED)
-        self.next_button.config(state=tk.NORMAL if self.current_index < len(self.samples) - 1 else tk.DISABLED)
+        self.prev_button.config(state=tk.NORMAL if self.current_set_index > 0 else tk.DISABLED)
+        self.next_button.config(state=tk.NORMAL if self.current_set_index < len(self.samples) - 1 else tk.DISABLED)
 
 if __name__ == "__main__":
     print("Starting main application")
