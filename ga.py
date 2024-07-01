@@ -14,7 +14,7 @@ load_dotenv()
 
 # Constants
 BATCH_SIZE = 256
-POPULATION_SIZE = 2
+POPULATION_SIZE = 24
 GENERATIONS = 10
 MUTATION_RATE = 0.2
 
@@ -32,7 +32,7 @@ def set_llm(model_id):
     model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
     logLine("Model loaded.")
     
-    llm = pipeline("text-generation", model=model, tokenizer=tokenizer, temperature=1.5, batch_size=BATCH_SIZE, max_new_tokens=256)
+    llm = pipeline("text-generation", model=model, tokenizer=tokenizer, temperature=2.5, batch_size=BATCH_SIZE, max_new_tokens=256)
     llm.tokenizer.pad_token_id = model.config.eos_token_id
     logLine("Pipeline created.")
     return llm
