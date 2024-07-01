@@ -90,11 +90,19 @@ def evaluate_obviousness(responses, task):
     similarities = [1-cosine(re, task_embedding) for re in response_embeddings]
     return similarities
 
+def generate_batch(prompts):
+        responses = llm(prompts)
+        tokenizer = llm.tokenizer
+        totalToks = sum(map(len, [tokenizer.encode(s[0]['generated_text'].replace(prompt, "")) for s, prompt in zip(responses, prompts)]))
+        logLine(f"Generated batch of {len(prompts)} samples. Toks/s: {totalToks/(time.time()-t0):.2f}")
+        
+        responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
+        
+        return responses
 def fitness(individual, task):
     t0 = time.time()
     prompt = f"{individual['format']}\n{individual['completeness']}\n{individual['obviousness']}\nTask: {task}\nOutput your response in JSON format with fields 'question1' through 'question5'. Surround your JSON output with <result></result> tags."
-    responses = llm([prompt] * BATCH_SIZE)[0]['generated_text']
-    responses = [r.replace(prompt, "").strip() for r in responses]
+    responses = generate_batch([prompt]*BATCH_SIZE)
     malformed = 0
     response_jsons = []
     for response in responses:
@@ -105,9 +113,7 @@ def fitness(individual, task):
             response_jsons.append(extracted)
     questionSets = ["".join([r[f'question{i}'] for i in range(1, 6)]) for r in response_jsons]
     completeness_prompts = [f"Are these questions {q} relevant to the task of {task}? Output your response in JSON format with a 'relevant' field. Surround your JSON output with <result></result> tags." for q in questionSets]
-    questions_responses = llm(completeness_prompts)[0]['generated_text']
-    for i,qResponse in enumerate(questions_responses):
-        questions_responses[i] = qResponse.replace(completeness_prompts[i], "").strip()
+    questions_responses = generate_batch(completeness_prompts)
 
     deception = 0
     for i, response in enumerate(questions_responses):
