@@ -135,6 +135,7 @@ def genetic_algorithm(task):
     population = generate_population(POPULATION_SIZE)
     
     for generation in tqdm(range(GENERATIONS)):
+        logLine(f"Generation {generation} starting...")
         tGen = time.time()
         fitnesses = [fitness(ind, task) for ind in population]
         best_individual = population[fitnesses.index(max(fitnesses))]
