@@ -77,12 +77,11 @@ import random
 from itertools import cycle
 def generate_rewords(sentences, codon_type, target_count):
     valid_rewords = []
-    sentence_cycle = cycle(sentences)
-    prompt_cycle = cycle(prompts)
     while len(valid_rewords) < target_count:
         repeats = 0
         malformed = 0
-        all_prompts = [f"{next(prompt_cycle)}\n\nSentence to reword: {next(sentence_cycle)}" for _ in range(BATCH_SIZE)]
+        random_sentence = random.choice(sentences)
+        all_prompts = [f"{random.choice(prompts)}\n\nSentence to reword: {random.choice(sentences)}" for _ in range(BATCH_SIZE)]
         responses = llm(all_prompts)
 
         for i,response in enumerate(responses):
@@ -93,6 +92,7 @@ def generate_rewords(sentences, codon_type, target_count):
                 repeats += 1
             else:
                 valid_rewords.append(extracted)
+                sentences.append(extracted)
             
         logLine(f"Current {codon_type}#{len(valid_rewords)} - Repeats: {repeats} - Malformed: {malformed}")
     valid_rewords = [{"codon": codon_type, "text": reword} for reword in valid_rewords]
