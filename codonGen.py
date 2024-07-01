@@ -74,10 +74,14 @@ def save_to_jsonl(data, filename):
             f.write('\n')
 
 import random
+from itertools import cycle
 def generate_rewords(sentences, codon_type, target_count):
     valid_rewords = []
+    sentence_cycle = cycle(sentences)
+    prompt_cycle = cycle(prompts)
     while len(valid_rewords) < target_count:
         all_prompts = []
+        # all_prompts = [f"{next(prompt_cycle)}\n\nSentence to reword: {next(sentence_cycle)}" for _ in range(BATCH_SIZE)]
         for _ in range(BATCH_SIZE):
             sentence = random.choice(sentences)
             prompt = random.choice(prompts)
