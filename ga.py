@@ -49,6 +49,7 @@ def load_codons(file_path):
     return codons
 
 codons = load_codons('codons.jsonl')
+logLine("Codons loaded.")
 
 def generate_individual():
     return {
