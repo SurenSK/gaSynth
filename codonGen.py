@@ -90,7 +90,7 @@ def generate_rewords(sentences, codon_type, target_count):
                 malformed += 1
             elif extracted in valid_rewords:
                 repeats += 1
-            else:
+            elif isinstance(extracted, str):
                 valid_rewords.append(extracted)
                 sentences.append(extracted)
             
