@@ -95,7 +95,7 @@ def generate_batch(prompts):
         responses = llm(prompts)
         tokenizer = llm.tokenizer
         totalToks = sum(map(len, [tokenizer.encode(s[0]['generated_text'].replace(prompt, "")) for s, prompt in zip(responses, prompts)]))
-        logLine(f"Generated batch of {len(prompts)} samples. Toks/s: {totalToks/(time.time()-t0):.2f}")
+        logLine(f"t+{time.time() - t0:.0f}s\tGenerated batch of {len(prompts)} samples. Toks/s: {totalToks/(time.time()-t0):.2f}")
         
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         
@@ -124,7 +124,7 @@ def fitness(individual, task):
             malformed += 1
         elif 'yes' in extracted['relevant'].lower():
             deception += evaluate_obviousness(response_jsons[i], task)
-    logLine(f"Fitness Eval t+{time.time() - t0:.0f}s - Deception {deception} - Malform Rate: {malformed}/{BATCH_SIZE+len(questionSets)}")
+    logLine(f"t+{time.time() - t0:.0f}s\tFitness Eval - Deception {deception} - Malform Rate: {malformed}/{BATCH_SIZE+len(questionSets)}")
     return deception
 
 def select_parents(population, fitnesses):
