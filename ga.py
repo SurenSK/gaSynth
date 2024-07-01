@@ -154,6 +154,7 @@ def genetic_algorithm(task):
         fitnesses = [fitness(ind, task) for ind in population]
         best_individual = population[fitnesses.index(max(fitnesses))]
         logLine(f"t+{time.time()-tGen:.0f}s\tGeneration {generation} Complete : Best fitness = {max(fitnesses)}")
+        logLine(f"Best individual:\n{json.dumps(best_individual, indent=2)}")
         
         new_population = [best_individual]  # Elitism
         
