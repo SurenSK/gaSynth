@@ -65,7 +65,7 @@ class BatchedSample:
             model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
             logLine("Model loaded.")
             
-            cls.llm = pipeline("text-generation", model=model, tokenizer=cls.tokenizer, temperature=2.5, batch_size=cls.batch_size, max_new_tokens=200)
+            cls.llm = pipeline("text-generation", model=model, tokenizer=cls.tokenizer, batch_size=cls.batch_size, max_new_tokens=200)
             cls.llm.tokenizer.pad_token_id = model.config.eos_token_id
             logLine("Pipeline created.")
             
