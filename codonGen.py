@@ -80,20 +80,21 @@ def generate_rewords(sentences, codon_type, target_count):
     sentence_cycle = cycle(sentences)
     prompt_cycle = cycle(prompts)
     while len(valid_rewords) < target_count:
-        all_prompts = []
-        # all_prompts = [f"{next(prompt_cycle)}\n\nSentence to reword: {next(sentence_cycle)}" for _ in range(BATCH_SIZE)]
-        for _ in range(BATCH_SIZE):
-            sentence = random.choice(sentences)
-            prompt = random.choice(prompts)
-            all_prompts.append(f"{prompt}\n\nSentence to reword: {sentence}")
+        # all_prompts = []
+        all_prompts = [f"{next(prompt_cycle)}\n\nSentence to reword: {next(sentence_cycle)}" for _ in range(BATCH_SIZE)]
+        # for _ in range(BATCH_SIZE):
+        #     sentence = random.choice(sentences)
+        #     prompt = random.choice(prompts)
+        #     all_prompts.append(f"{prompt}\n\nSentence to reword: {sentence}")
         responses = llm(all_prompts)
 
         for i,response in enumerate(responses):
             extracted = extract_json(response[0]['generated_text'].replace(all_prompts[i], "").strip())
-            if not isinstance(extracted, Exception):
-                valid_rewords.append({"codon": codon_type, "text": extracted})
+            if not isinstance(extracted, Exception) and extracted not in valid_rewords:
+                valid_rewords.append(extracted)
         
         logLine(f"Current {codon_type} rewords: {len(valid_rewords)}")
+    valid_rewords = [{"codon": codon_type, "text": reword} for reword in valid_rewords]
     return valid_rewords
 
 format_rewords = generate_rewords(iniFormatCodons, "format", 100)
