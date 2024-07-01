@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 # Load environment variables from .env file
 load_dotenv()
-
+BATCH_SIZE = 128
 def logLine(l, verbose=True):
     with open("log.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
@@ -22,7 +22,7 @@ def set_llm(model_id):
     model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
     logLine("Model loaded.")
     
-    llm = pipeline("text-generation", model=model, tokenizer=tokenizer, batch_size=128, max_new_tokens=256)
+    llm = pipeline("text-generation", model=model, tokenizer=tokenizer, BATCH_SIZE=128, max_new_tokens=256)
     llm.tokenizer.pad_token_id = model.config.eos_token_id
     logLine("Pipeline created.")
     return llm
@@ -78,7 +78,8 @@ def generate_rewords(sentences, codon_type, target_count):
     valid_rewords = []
     while len(valid_rewords) < target_count:
         all_prompts = []
-        for sentence in sentences:
+        for _ in range(BATCH_SIZE):
+            sentence = random.choice(sentences)
             prompt = random.choice(prompts)
             all_prompts.append(f"{prompt}\n\nSentence to reword: {sentence}")
         responses = llm(all_prompts)
