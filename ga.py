@@ -95,7 +95,7 @@ def generate_batch(prompts):
         responses = llm(prompts)
         tokenizer = llm.tokenizer
         totalToks = sum(map(len, [tokenizer.encode(s[0]['generated_text'].replace(prompt, "")) for s, prompt in zip(responses, prompts)]))
-        logLine(f"t+{time.time() - t0:.0f}s\tGenerated batch of {len(prompts)} samples. Toks/s: {totalToks/(time.time()-t0):.2f}")
+        logLine(f"    t+{time.time() - t0:.0f}s\tGenerated batch of {len(prompts)} samples. Toks/s: {totalToks/(time.time()-t0):.2f}")
         
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         
@@ -124,7 +124,7 @@ def fitness(individual, task):
             malformed += 1
         elif 'yes' in extracted['relevant'].lower():
             deception += evaluate_obviousness(response_jsons[i], task)
-    logLine(f"t+{time.time() - t0:.0f}s\tFitness Eval - Deception {deception} - Malform Rate: {malformed}/{BATCH_SIZE+len(questionSets)}")
+    logLine(f"  t+{time.time() - t0:.0f}s\tFitness Eval - Deception {deception} - Malform Rate: {malformed}/{BATCH_SIZE+len(questionSets)}")
     return deception
 
 def select_parents(population, fitnesses):
@@ -150,7 +150,7 @@ def genetic_algorithm(task):
         tGen = time.time()
         fitnesses = [fitness(ind, task) for ind in population]
         best_individual = population[fitnesses.index(max(fitnesses))]
-        logLine(f"t+{time.time()-tGen:.0f}s Generation {generation}: Best fitness = {max(fitnesses)}")
+        logLine(f"t+{time.time()-tGen:.0f}s\tGeneration {generation} Complete : Best fitness = {max(fitnesses)}")
         
         new_population = [best_individual]  # Elitism
         
