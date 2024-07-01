@@ -6,3 +6,4 @@ data.txt
 samples.jsonl
 minillm.py
 .env
+generated_responses.json
