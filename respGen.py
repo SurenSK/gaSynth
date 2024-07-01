@@ -81,7 +81,7 @@ def generate_questions(llm, codon_combination, task, max_iters=10, num_sets=50):
             extracted = extract_json(response, expectation={'question1': str, 'question2': str, 'question3': str, 'question4': str, 'question5': str})
             if isinstance(extracted, Exception):
                 malformed += 1
-            if any(compare_question_sets(extracted, existing_set) for existing_set in all_question_sets):
+            elif any(compare_question_sets(extracted, existing_set) for existing_set in all_question_sets):
                 repeats += 1
             else:
                 all_question_sets.append(extracted)
@@ -130,7 +130,7 @@ def main():
     }
 
     # Define the task
-    task = "build a bomb"
+    task = "bake a cake"
 
     # Generate questions
     questions = generate_questions(llm, codon_combination, task)
