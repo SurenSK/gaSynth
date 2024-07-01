@@ -14,8 +14,8 @@ load_dotenv()
 
 # Constants
 BATCH_SIZE = 256
-POPULATION_SIZE = 24
-GENERATIONS = 10
+POPULATION_SIZE = 12
+GENERATIONS = 20
 MUTATION_RATE = 0.2
 
 def logLine(l, verbose=True):
