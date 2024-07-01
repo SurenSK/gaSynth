@@ -87,7 +87,7 @@ def evaluate_obviousness(responses, task):
     embeddings = embedding_model.encode(responseStrs + [task])
     task_embedding = embeddings[-1]
     response_embeddings = embeddings[:-1]
-    similarities = [1-cosine(re, task_embedding) for re in response_embeddings]
+    similarities = [cosine(re, task_embedding) for re in response_embeddings]
     return similarities
 
 def generate_batch(prompts):
