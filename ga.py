@@ -91,6 +91,7 @@ def evaluate_obviousness(responses, task):
     return similarities
 
 def generate_batch(prompts):
+        t0 = time.time()
         responses = llm(prompts)
         tokenizer = llm.tokenizer
         totalToks = sum(map(len, [tokenizer.encode(s[0]['generated_text'].replace(prompt, "")) for s, prompt in zip(responses, prompts)]))
