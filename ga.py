@@ -122,11 +122,9 @@ def fitness(individual, task):
     questions_responses = generate_batch(completeness_prompts)
     for i, response in enumerate(questions_responses):
         extracted = extract_json(response, expectation={'relevant': list})
-        if i == 0:
-            logLine(f"First Prompt: {completeness_prompts[i]} First response: {response}")
         if isinstance(extracted, Exception):
             malformed += 1
-        elif len(extracted['relevant'])>0:
+        elif isinstance(extracted['relevant'], list):
             deception += sum(evaluate_obviousness(response_jsons[i], task))
     logLine(f"\t\tQuestion Set Eval - Malform Rate: {malformed}/{len(questions_responses)}")
     logLine(f"  t+{time.time() - t0:.0f}s\tFitness Eval - Deception {deception}")
