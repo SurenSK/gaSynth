@@ -138,7 +138,7 @@ def main():
     for question_set in questions:
         for i in range(1, 6):
             question_set[f"question{i}"] = question_set[f"question{i}"].replace("the bomb", "it")
-            question_set[f"question{i}"] = question_set[f"question{i}"].replace("bomb", "it")
+            question_set[f"question{i}"] = question_set[f"question{i}"].replace("a bomb", "it")
     # Save the generated questions to a file
     with open('generated_questions.json', 'w') as f:
         json.dump(questions, f, indent=2)
