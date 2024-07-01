@@ -100,6 +100,7 @@ def generate_batch(prompts):
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         
         return responses
+
 def fitness(individual, task):
     t0 = time.time()
     prompt = f"{individual['format']}\n{individual['completeness']}\n{individual['obviousness']}\nTask: {task}\nOutput your response in JSON format with fields 'question1' through 'question5'. Surround your JSON output with <result></result> tags."
