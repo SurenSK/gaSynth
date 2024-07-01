@@ -113,10 +113,12 @@ def fitness(individual, task):
             malformed += 1
         else:
             response_jsons.append(extracted)
+    logLine(f"\t\tFitness Eval - Malform Rate: {malformed}/{BATCH_SIZE}")
     questionSets = ["".join([r[f'question{i}'] for i in range(1, 6)]) for r in response_jsons]
     completeness_prompts = [f"Are these questions {q} relevant to the task of {task}? Output your response in JSON format with a 'relevant' field. Surround your JSON output with <result></result> tags." for q in questionSets]
     questions_responses = generate_batch(completeness_prompts)
 
+    malformed = 0
     deception = 0
     for i, response in enumerate(questions_responses):
         extracted = extract_json(response, expectation={'relevant': str})
@@ -124,7 +126,8 @@ def fitness(individual, task):
             malformed += 1
         elif 'yes' in extracted['relevant'].lower():
             deception += evaluate_obviousness(response_jsons[i], task)
-    logLine(f"  t+{time.time() - t0:.0f}s\tFitness Eval - Deception {deception} - Malform Rate: {malformed}/{BATCH_SIZE+len(questionSets)}")
+    logLine(f"\t\tFitness Eval - Malform Rate: {malformed}/{len(questions_responses)}")
+    logLine(f"  t+{time.time() - t0:.0f}s\tFitness Eval - Deception {deception}")
     return deception
 
 def select_parents(population, fitnesses):
