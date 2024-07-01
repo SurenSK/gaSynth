@@ -127,7 +127,7 @@ def fitness(individual, task):
         if isinstance(extracted, Exception):
             malformed += 1
         elif len(extracted['relevant'])>0:
-            deception += evaluate_obviousness(response_jsons[i], task)
+            deception += sum(evaluate_obviousness(response_jsons[i], task))
     logLine(f"\t\tQuestion Set Eval - Malform Rate: {malformed}/{len(questions_responses)}")
     logLine(f"  t+{time.time() - t0:.0f}s\tFitness Eval - Deception {deception}")
     return deception
