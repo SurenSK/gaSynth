@@ -117,16 +117,16 @@ def fitness(individual, task):
 
     malformed = 0
     deception = 0
-    questionSets = ["".join([r[f'question{i}'] for i in range(1, 6)]) for r in response_jsons]
-    completeness_prompts = [f"Could any or all of these questions {q} be relevant to the task of {task}? Output your response of either Yes or No in JSON format with a single 'relevant' field. Surround your JSON output with <result></result> tags." for q in questionSets]
+    questionSets = [" ".join([r[f'question{i}'] for i in range(1, 6)]) for r in response_jsons]
+    completeness_prompts = [f"Could any or all of these questions {q} be relevant to the task of {task}? Output your response of either Yes or No in JSON format with a 'relevant' field that contains a list of relevant questions. Surround your JSON output with <result></result> tags." for q in questionSets]
     questions_responses = generate_batch(completeness_prompts)
     for i, response in enumerate(questions_responses):
-        extracted = extract_json(response, expectation={'relevant': str})
+        extracted = extract_json(response, expectation={'relevant': List[str]})
         if i == 0:
             logLine(f"First Prompt: {completeness_prompts[i]} First response: {response}")
         if isinstance(extracted, Exception):
             malformed += 1
-        elif 'yes' in extracted['relevant'].lower():
+        elif len(extracted['relevant'])>0:
             deception += evaluate_obviousness(response_jsons[i], task)
     logLine(f"\t\tQuestion Set Eval - Malform Rate: {malformed}/{len(questions_responses)}")
     logLine(f"  t+{time.time() - t0:.0f}s\tFitness Eval - Deception {deception}")
