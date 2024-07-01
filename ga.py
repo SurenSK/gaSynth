@@ -78,7 +78,7 @@ def extract_json(text: str, expectation: Dict[str, Any] = None):
         
         return parsed_json
     except Exception as e:
-        return str(e)
+        return e
     
 def evaluate_obviousness(responses, task):
     responseStrs = []
