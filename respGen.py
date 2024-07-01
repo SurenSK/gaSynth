@@ -69,7 +69,8 @@ def compare_question_sets(set1, set2):
 
 def generate_questions(llm, codon_combination, task, max_iters=10, num_sets=50):
     prompt_template = f"{codon_combination['format']}\n{codon_combination['completeness']}\n{codon_combination['obviousness']}\nTask: {{task}}\nOutput your response in JSON format with fields 'question1' through 'question5'. Surround your JSON output with <result></result> tags."
-    
+    reword_prompt = "Reword the given sentence. Output your response in JSON format with a 'reworded' field. Surround your JSON output with <result></result> tags."
+
     all_question_sets = []
     
     for _ in range(max_iters):
@@ -94,7 +95,6 @@ def generate_questions(llm, codon_combination, task, max_iters=10, num_sets=50):
         malformed = 0
         repeats = 0
         logLine(f"Only generated {len(all_question_sets)} question sets, which is less than the desired {num_sets}.")
-        reword_prompt = "Reword the given sentence. Output your response in JSON format with a 'reworded' field. Surround your JSON output with <result></result> tags."
         reword_prompts = []
         for _ in all_question_sets:
             for i in range(1, 6):
