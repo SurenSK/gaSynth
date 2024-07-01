@@ -28,10 +28,22 @@ class TextRatingApp:
         self.name_entry = ttk.Entry(name_frame, textvariable=self.name_var)
         self.name_entry.pack(side=tk.LEFT)
 
+        # Main content frame
+        content_frame = ttk.Frame(master)
+        content_frame.pack(pady=10, fill=tk.BOTH, expand=True)
+
         # Text display
-        self.text_display = tk.Text(master, height=10, width=50, wrap=tk.WORD)
-        self.text_display.pack(pady=10)
+        self.text_display = tk.Text(content_frame, height=10, width=50, wrap=tk.WORD)
+        self.text_display.grid(row=0, column=0, rowspan=5, padx=(0, 10))
         self.text_display.config(state=tk.DISABLED)
+
+        # Relevance radio buttons
+        self.relevance_vars = []
+        for i in range(5):
+            var = tk.StringVar(value="0")
+            self.relevance_vars.append(var)
+            ttk.Radiobutton(content_frame, text="Not Relevant", variable=var, value="0").grid(row=i, column=1, sticky="w")
+            ttk.Radiobutton(content_frame, text="Relevant", variable=var, value="1").grid(row=i, column=2, sticky="w")
 
         # Deceptiveness scale
         ttk.Label(master, text="Deceptiveness:").pack()
@@ -71,32 +83,35 @@ class TextRatingApp:
         label.config(text=str(int_value))
 
     def load_samples(self):
-        print("Loading samples from samples.jsonl")
+        print("Loading samples from generated_responses.json")
         try:
-            with open('samples.jsonl', 'r') as file:
-                return [json.loads(line)['text'] for line in file]
+            with open('generated_responses.json', 'r') as file:
+                data = json.load(file)
+                return [data[f"question{i}"] for i in range(1, 6)]
         except FileNotFoundError:
-            print("samples.jsonl file not found")
+            print("generated_responses.json file not found")
             raise
         except json.JSONDecodeError:
-            print("Error decoding JSON in samples.jsonl")
+            print("Error decoding JSON in generated_responses.json")
             raise
 
     def display_current_sample(self):
         print(f"Displaying sample {self.current_index + 1}")
         self.text_display.config(state=tk.NORMAL)
         self.text_display.delete(1.0, tk.END)
-        self.text_display.insert(tk.END, self.samples[self.current_index])
+        for i, question in enumerate(self.samples, start=1):
+            self.text_display.insert(tk.END, f"{i}. {question}\n\n")
         self.text_display.config(state=tk.DISABLED)
 
     def save_ratings(self):
         deceptiveness = self.deceptiveness_var.get()
         completeness = self.completeness_var.get()
+        relevance = ''.join([var.get() for var in self.relevance_vars])
         name = self.name_var.get() or "Anonymous"
-        print(f"Saving ratings: Name={name}, Deceptiveness={deceptiveness}, Completeness={completeness}")
+        print(f"Saving ratings: Name={name}, Deceptiveness={deceptiveness}, Completeness={completeness}, Relevance={relevance}")
         try:
             with open('data.txt', 'a') as file:
-                file.write(f"[{name}, Sample{self.current_index + 1}, {deceptiveness}, {completeness}]\n")
+                file.write(f"[{name}, Sample{self.current_index + 1}, {deceptiveness}, {completeness}, {relevance}]\n")
         except IOError as e:
             print(f"Error saving ratings: {e}")
 
@@ -122,6 +137,8 @@ class TextRatingApp:
         self.completeness_var.set(3)
         self.deceptiveness_label.config(text="3")
         self.completeness_label.config(text="3")
+        for var in self.relevance_vars:
+            var.set("0")
 
     def update_button_states(self):
         self.prev_button.config(state=tk.NORMAL if self.current_index > 0 else tk.DISABLED)

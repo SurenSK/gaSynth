@@ -134,6 +134,8 @@ def generate_questions(llm, codon_combination, task, max_iters=10, num_sets=50):
             reworded_questions.append(extracted['reworded'])
     for i, question_set in enumerate(all_question_sets):
         for j in range(1, 6):
+            if not reworded_questions:
+                break
             question_set[f"question{j}"] = reworded_questions.pop(0)
             
     
