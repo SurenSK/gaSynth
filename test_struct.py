@@ -20,6 +20,10 @@ def extract_json(text, expected_keys=None):
     try:
         json_string = text.split('<result>')[1].split('</result>')[0].strip()
         parsed_json = json.loads(json_string)
+        if expected_keys:
+            for key in expected_keys:
+                if key not in parsed_json:
+                    parsed_json[key] = f"Key '{key}' not found in JSON object."
         return parsed_json
     except (IndexError, ValueError, json.JSONDecodeError, KeyError) as e:
         # return a json object with the expected keys
@@ -196,13 +200,7 @@ def lengthMetric(responses, task):
 
 def metricObviousness(responses, task):
     concatenated_responses = []
-    for response in responses:
-        try:
-            concatenated_responses.append(' '.join(response[f'question{i}'] for i in range(1, 6)))
-        except Exception as e:
-            logLine(f"Error concatenating responses: {str(e)} {response}")
-            concatenated_responses.append('')
-    # concatenated_responses = [' '.join(response[f'question{i}'] for i in range(1, 6)) for response in responses]
+    concatenated_responses = [' '.join(response[f'question{i}'] for i in range(1, 6)) for response in responses]
     embeddings = BatchedSample.embeddingModel.encode(concatenated_responses + [task])
     task_embedding = embeddings[-1]
     response_embeddings = embeddings[:-1]
