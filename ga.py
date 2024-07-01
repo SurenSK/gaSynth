@@ -16,7 +16,7 @@ load_dotenv()
 BATCH_SIZE = 256
 POPULATION_SIZE = 12
 GENERATIONS = 20
-MUTATION_RATE = 0.2
+MUTATION_RATE = 1
 
 def logLine(l, verbose=True):
     with open("log.txt", "a") as log_file:
