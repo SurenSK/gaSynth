@@ -161,9 +161,9 @@ def mutateFront(P):
     def mut(a_codon):
         prompt = f"Rewrite the sentence in different words. Provide a JSON response with a 'reworded' property. Use <result></result> tags around the JSON. No extra text. Sentence to reword: {a_codon}"
         resp = BatchedSample.generate_batch([prompt])[0]
-        resp = extract_json(resp, ["reworded"])["reworded"]
-        logLine(f"*********************\nMutated {a_codon} to get {resp}.\n*********************", verbose=False)
-        return resp
+        respExtracted = extract_json(resp, ["reworded"])["reworded"]
+        logLine(f"*********************\nMutated {a_codon}\n*to get: {resp}\n*extracted to: {respExtracted}.\n*********************", verbose=False)
+        return respExtracted
     A = sampleFront(P, 1)[0]
     nCodons = [a_codon if random.random() > 0.5 else mut(a_codon) for a_codon in A.codons]
     logLine(f"t+{time.time() - t0:.1f}s\tMutated {A.id} to get new codons.")
