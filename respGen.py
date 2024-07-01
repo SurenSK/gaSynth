@@ -10,7 +10,7 @@ from typing import Dict, Any
 load_dotenv()
 
 # Constants
-BATCH_SIZE = 16
+BATCH_SIZE = 128
 
 def logLine(l, verbose=True):
     with open("logR.txt", "a") as log_file:
@@ -41,7 +41,10 @@ def generate_batch(prompts):
         logLine(f"    t+{time.time() - t0:.0f}s\tGenerated batch of {len(prompts)} samples. Toks/s: {totalToks/(time.time()-t0):.2f}")
         
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
-        
+        for i,p,r in enumerate(zip(prompts, responses)):
+            logLine(f"{i+1} : {p}\n\t{r}\n")
+            if i > 3:
+                break
         return responses
 
 def extract_json(text: str, expectation: Dict[str, Any] = None):
