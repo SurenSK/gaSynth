@@ -84,7 +84,7 @@ def generate_rewords(sentences, codon_type, target_count):
         responses = llm(all_prompts)
 
         for i,response in enumerate(responses):
-            extracted = extract_json(response[0]['generated_text']).replace(all_prompts[i], "").strip()
+            extracted = extract_json(response[0]['generated_text'].replace(all_prompts[i], "").strip())
             if not isinstance(extracted, Exception):
                 valid_rewords.append({"codon": codon_type, "text": extracted})
         
