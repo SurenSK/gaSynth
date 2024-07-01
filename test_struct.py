@@ -25,7 +25,8 @@ def extract_json(text, expected_keys=None):
                 if key not in parsed_json:
                     parsed_json[key] = f"Key '{key}' not found in JSON object."
         return parsed_json
-    except (IndexError, ValueError, json.JSONDecodeError, KeyError) as e:
+    except (IndexError, ValueError, json.JSONDecodeError, KeyError, TypeError) as e:
+        logLine(f"Error extracting JSON: {str(e)}")
         # return a json object with the expected keys
         if expected_keys:
             return {key: str(e) for key in expected_keys}
