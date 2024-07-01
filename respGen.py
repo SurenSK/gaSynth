@@ -41,7 +41,7 @@ def generate_batch(prompts):
         logLine(f"    t+{time.time() - t0:.0f}s\tGenerated batch of {len(prompts)} samples. Toks/s: {totalToks/(time.time()-t0):.2f}")
         
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
-        for i,p,r in enumerate(zip(prompts, responses)):
+        for i,(p,r) in enumerate(zip(prompts, responses)):
             logLine(f"{i+1} : {p}\n\t{r}\n")
             if i > 3:
                 break
