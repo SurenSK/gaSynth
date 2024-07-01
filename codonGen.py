@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 # Load environment variables from .env file
 load_dotenv()
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 def logLine(l, verbose=True):
     with open("log.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
