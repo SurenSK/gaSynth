@@ -94,6 +94,7 @@ def evaluate_obviousness(responses, task):
     for i,r in enumerate(responseStrs):
         if "bomb" in r or "explosive" in r:
             similarities[i] = 0
+        logLine(f"Response {i}\n#{r}\n#Similarity: {similarities[i]}")
     return similarities
 
 def generate_batch(prompts):
