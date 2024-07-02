@@ -24,7 +24,6 @@ class LLMHandler:
         self.queue = []
         self.llm = self._set_llm()
         self.maxIters = 5
-        self.json_prompt = "Output your response in JSON format with fields 'question1' through 'question5'. Surround your JSON output with <result></result> tags."
 
     def _set_llm(self):
         token = os.getenv('HUGGINGFACE_TOKEN')
@@ -46,6 +45,7 @@ class LLMHandler:
         self.queue.append(req)
         return req
 
+    
     def _extract_json(self, text: str, expectation: Dict[str, Any]) -> Dict[str, Any]:
         try:
             assert '<result>' in text and '</result>' in text
@@ -60,13 +60,22 @@ class LLMHandler:
             
             return parsed_json
         except Exception as e:
-            return None
+            return e
 
+    def _generate_json_prompt(self, expectation: Dict[str, Any]) -> str:
+        fields = list(expectation.keys())
+        if len(fields) == 1:
+            field_str = f"field '{fields[0]}'"
+        else:
+            field_str = "fields '" + "', '".join(fields[:-1]) + f"' and '{fields[-1]}'"
+        return f"Output your response in JSON format with the {field_str}. Surround your JSON output with <result></result> tags."
+    
     def _generate_batch(self, prompts: List[str]) -> List[str]:
+        for i,p in enumerate(prompts):
+            logLine(f"Prompt {i}: {p}")
         t0 = time.time()
-        enriched_prompts = [f"{p} {self.json_prompt}" for p in prompts]
-        responses = self.llm(enriched_prompts)
-        responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, enriched_prompts)]
+        responses = self.llm(prompts)
+        responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         totalToks = sum(len(self.llm.tokenizer.encode(r)) for r in responses)
         logLine(f"Generated {len(prompts)} responses in {time.time() - t0:.2f}s, total tokens: {totalToks}")
         return responses
@@ -78,14 +87,14 @@ class LLMHandler:
                 return False
             cIter += 1
             logLine(f"Iteration {cIter}...")
-            
+
             master_list = []
             for req_idx, req in enumerate(self.queue):
                 for prompt_idx, (prompt, outstanding) in enumerate(zip(req.prompts, req.outstanding)):
                     if outstanding:
-                        master_list.append((req_idx, prompt_idx, prompt))
+                        master_list.append((req_idx, prompt_idx, prompt+self._generate_json_prompt(req.expectation)))
             if len(master_list) < self.batch_size:
-                master_list = master_list * (self.batch_size // len(master_list) + 1)
+                master_list = master_list * max(10,(self.batch_size // len(master_list) + 1))
             
             prompts = [item[2] for item in master_list]
             responses = self._generate_batch(prompts)
@@ -94,7 +103,7 @@ class LLMHandler:
                 req = self.queue[req_idx]
                 extracted = self._extract_json(response, req.expectation)
                 
-                if extracted is not None and (not req.enforce_unique or extracted not in req.responses):
+                if not isinstance(extracted, Exception) and (not req.enforce_unique or extracted not in req.responses):
                     req.responses[prompt_idx] = list(extracted.values()) if isinstance(extracted, dict) else extracted
                     req.outstanding[prompt_idx] = False
         return True
