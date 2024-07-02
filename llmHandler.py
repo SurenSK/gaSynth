@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 def logLine(l, verbose=True):
-    with open("log.txt", "a") as log_file:
+    with open("handler.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
 
 class Request:
