@@ -85,7 +85,6 @@ def evaluate_obviousness(responses, task):
     responseStrs = []
     for i in range(1, 6):
         responseStrs.append(responses[f'question{i}'])
-    logLine(f"Response Strings: {len(responseStrs)}")
     embeddings = embedding_model.encode(responseStrs + [task])
     task_embedding = embeddings[-1]
     response_embeddings = embeddings[:-1]
