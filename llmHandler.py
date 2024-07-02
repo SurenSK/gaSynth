@@ -87,17 +87,28 @@ class LLMHandler:
         cIter = 0
         while any(req.outstanding for req in self.queue):
             if cIter == self.maxIters:
+                logLine("Reached maximum iterations. Stopping process.")
                 return False
             cIter += 1
             logLine(f"Iteration {cIter}...")
 
             master_list = []
             for req_idx, req in enumerate(self.queue):
+                logLine(f"Request {req_idx}: {sum(req.outstanding)} prompts outstanding")
                 for prompt_idx, (prompt, outstanding) in enumerate(zip(req.prompts, req.outstanding)):
                     if outstanding:
                         master_list.append((req_idx, prompt_idx, prompt+self._generate_json_prompt(req.expectation)))
+            
+            if not master_list or len(master_list) == 0:
+                logLine("Error: master_list is empty. This shouldn't happen. Stopping process.")
+                return False
+            
+            logLine(f"Master list size: {len(master_list)}")
+            
             if len(master_list) < self.batch_size:
-                master_list = master_list * max(10,(self.batch_size // len(master_list) + 1))
+                multiplication_factor = max(10, (self.batch_size // len(master_list) + 1))
+                master_list = master_list * multiplication_factor
+                logLine(f"Extended master list to size: {len(master_list)}")
             
             prompts = [item[2] for item in master_list]
             responses = self._generate_batch(prompts)
@@ -109,6 +120,10 @@ class LLMHandler:
                 if not isinstance(extracted, Exception) and (not req.enforce_unique or extracted not in req.responses):
                     req.responses[prompt_idx] = list(extracted.values()) if isinstance(extracted, dict) else extracted
                     req.outstanding[prompt_idx] = False
+            
+            logLine(f"After processing: {sum(sum(req.outstanding) for req in self.queue)} prompts still outstanding")
+        
+        logLine("All prompts processed successfully.")
         return True
 
 llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2")
