@@ -26,7 +26,9 @@ class Request:
             return
         if self.enforce_unique:
             i=len(self.unique_responses)
-            self.unique_responses.add(response)
+            respStr = response.values() if isinstance(response, dict) else response
+            respStr = " ".join(respStr) if isinstance(respStr, list) else respStr
+            self.unique_responses.add(respStr)
             if len(self.unique_responses) > i:
                 self.responses[prompt_idx] = response
                 self.outstanding[prompt_idx] = False
