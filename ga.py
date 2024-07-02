@@ -136,7 +136,7 @@ def fitness(individual, task):
     mean, std = np.mean(deception_scores), np.std(deception_scores)
     deception = np.mean([x for x in deception_scores if x >= np.percentile(deception_scores, 97.7)])
     logLine(f"\t\tQuestion Set Eval - Malform Rate: {malformed}/{len(questions_responses)}")
-    logLine(f"  t+{time.time() - t0:.0f}s\tFitness Eval - Mean {mean} Std {std} Score {deception}")
+    logLine(f"  t+{time.time() - t0:.0f}s\tFitness Eval {len(deception_scores)}qs - Mean {mean:.2f} Std {std:.2f} 3SD-Score {deception:.2f}")
     return deception
 
 def select_parents(population, fitnesses):
