@@ -76,11 +76,12 @@ class LLMHandler:
     def _generate_batch(self, prompts: List[str]) -> List[str]:
         # for i,p in enumerate(prompts):
         #     logLine(f"Prompt {i}: {p}")
-        t0 = time.time()
+        tGen = time.time()
         responses = self.llm(prompts)
+        tGen = time.time() - tGen
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         totalToks = sum(len(self.llm.tokenizer.encode(r)) for r in responses)
-        logLine(f"Generated {len(prompts)} responses in {time.time() - t0:.2f}s, total tokens: {totalToks}")
+        logLine(f"t+{tGen:.2f}s - Generated {len(prompts)} responses - {totalToks/tGen:.0f}toks")
         return responses
 
     def process(self):
