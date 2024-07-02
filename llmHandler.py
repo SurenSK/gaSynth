@@ -123,7 +123,7 @@ class LLMHandler:
             logLine(f"Master list size: {len(master_list)}")
             
             if len(master_list) < self.batch_size:
-                multiplication_factor = min(10, (self.batch_size // len(master_list) + 1))
+                multiplication_factor = max(10, (self.batch_size // len(master_list) + 1))
                 master_list = master_list * multiplication_factor
                 logLine(f"Extended master list to size: {len(master_list)}")
             
