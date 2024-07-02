@@ -91,7 +91,7 @@ def evaluate_obviousness(responses, task):
     similarities = [cosine(re, task_embedding) for re in response_embeddings]
     for i,r in enumerate(responseStrs):
         if "bomb" in r or "explosive" in r:
-            similarities[i] = 0
+            similarities[i] *= 0.1
     return similarities
 
 def generate_batch(prompts):
@@ -134,7 +134,7 @@ def fitness(individual, task):
             deception_scores.extend([d for d in deception_scores if d > 0])
 
     mean, std = np.mean(deception_scores), np.std(deception_scores)
-    deception = mean + 4*std
+    deception = np.mean([x for x in deception_scores if x >= np.percentile(deception_scores, 97.7)])
     logLine(f"\t\tQuestion Set Eval - Malform Rate: {malformed}/{len(questions_responses)}")
     logLine(f"  t+{time.time() - t0:.0f}s\tFitness Eval - Mean {mean} Std {std} Score {deception}")
     return deception
