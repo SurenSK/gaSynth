@@ -23,6 +23,7 @@ class LLMHandler:
         self.batch_size = batch_size
         self.queue = []
         self.llm = self._set_llm()
+        self.maxIters = 5
         self.json_prompt = "Output your response in JSON format with fields 'question1' through 'question5'. Surround your JSON output with <result></result> tags."
 
     def _set_llm(self):
@@ -31,7 +32,7 @@ class LLMHandler:
             raise ValueError("HUGGINGFACE_TOKEN is not set in the environment.")
         
         tokenizer = AutoTokenizer.from_pretrained(self.model_id, token=token)
-        model = AutoModelForCausalLM.from_pretrained(self.model_id, token=token, 
+        model = AutoModelForCausalLM.from_pretrained(self.model_id, token=token, cache_dir=".",
             torch_dtype=torch.bfloat16, device_map="auto")
         model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
         
@@ -71,12 +72,13 @@ class LLMHandler:
         return responses
 
     def process(self):
-        maxIters = 5
+        cIter = 0
         while any(req.outstanding for req in self.queue):
-            if maxIters == 0:
+            if cIter == self.maxIters:
                 return False
-            maxIters -= 1
-
+            cIter += 1
+            logLine(f"Iteration {cIter}...")
+            
             master_list = []
             for req_idx, req in enumerate(self.queue):
                 for prompt_idx, (prompt, outstanding) in enumerate(zip(req.prompts, req.outstanding)):
