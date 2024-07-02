@@ -23,6 +23,7 @@ class LLMHandler:
         self.batch_size = batch_size
         self.queue = []
         self.llm = self._set_llm()
+        self.json_prompt = "Output your response in JSON format with fields 'question1' through 'question5'. Surround your JSON output with <result></result> tags."
 
     def _set_llm(self):
         token = os.getenv('HUGGINGFACE_TOKEN')
@@ -61,16 +62,21 @@ class LLMHandler:
             return None
 
     def _generate_batch(self, prompts: List[str]) -> List[str]:
-        tGen = time.time()
-        responses = self.llm(prompts)
-        tGen = time.time() - tGen
-        responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
+        t0 = time.time()
+        enriched_prompts = [f"{p} {self.json_prompt}" for p in prompts]
+        responses = self.llm(enriched_prompts)
+        responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, enriched_prompts)]
         totalToks = sum(len(self.llm.tokenizer.encode(r)) for r in responses)
-        logLine(f"+t{tGen:.2f}s - Generated {len(prompts)} responses - {totalToks/tGen:.0f}toks")
+        logLine(f"Generated {len(prompts)} responses in {time.time() - t0:.2f}s, total tokens: {totalToks}")
         return responses
 
     def process(self):
+        maxIters = 5
         while any(req.outstanding for req in self.queue):
+            if maxIters == 0:
+                return False
+            maxIters -= 1
+
             master_list = []
             for req_idx, req in enumerate(self.queue):
                 for prompt_idx, (prompt, outstanding) in enumerate(zip(req.prompts, req.outstanding)):
@@ -89,6 +95,7 @@ class LLMHandler:
                 if extracted is not None and (not req.enforce_unique or extracted not in req.responses):
                     req.responses[prompt_idx] = list(extracted.values()) if isinstance(extracted, dict) else extracted
                     req.outstanding[prompt_idx] = False
+        return True
 
 llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2")
 
@@ -99,8 +106,11 @@ reword_request = llm_handler.request(["Reword this sentence: I like to eat apple
 logLine("Requests set up.")
 
 logLine("Processing requests...")
-llm_handler.process()
-logLine("Requests processed.")
+res = llm_handler.process()
+if not res:
+    logLine("Processing failed.")
+else:
+    logLine("Requests processed.")
 
 logLine(capital_request.responses)
 logLine(country_request.responses)
