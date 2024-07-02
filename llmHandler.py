@@ -17,8 +17,22 @@ class Request:
         self.prompts = prompts
         self.expectation = expectation
         self.responses = [None] * len(prompts)
+        self.unique_responses = set()
         self.outstanding = [True] * len(prompts)
         self.enforce_unique = enforce_unique
+    
+    def add_response(self, prompt_idx: int, response: Any):
+        if isinstance(response, Exception):
+            return
+        if self.enforce_unique:
+            i=len(self.unique_responses)
+            self.unique_responses.add(response)
+            if len(self.unique_responses) > i:
+                self.responses[prompt_idx] = response
+                self.outstanding[prompt_idx] = False
+        else:
+            self.responses[prompt_idx] = response
+            self.outstanding[prompt_idx] = False
 
 class LLMHandler:
     def __init__(self, model_id: str, batch_size: int = 256):
@@ -47,7 +61,6 @@ class LLMHandler:
         req = Request(prompts, expectation, enforce_unique)
         self.queue.append(req)
         return req
-
     
     def _extract_json(self, text: str, expectation: Dict[str, Any]) -> Dict[str, Any]:
         try:
@@ -118,10 +131,10 @@ class LLMHandler:
             for (req_idx, prompt_idx, _), response in zip(master_list, responses):
                 req = self.queue[req_idx]
                 extracted = self._extract_json(response, req.expectation)
-                
-                if not isinstance(extracted, Exception) and (not req.enforce_unique or extracted not in req.responses):
-                    req.responses[prompt_idx] = list(extracted.values()) if isinstance(extracted, dict) else extracted
-                    req.outstanding[prompt_idx] = False
+                req.add_response(prompt_idx, extracted)
+                # if not isinstance(extracted, Exception) and (not req.enforce_unique or extracted not in req.responses):
+                #     req.responses[prompt_idx] = list(extracted.values()) if isinstance(extracted, dict) else extracted
+                #     req.outstanding[prompt_idx] = False
             
             logLine(f"After processing: {sum(sum(req.outstanding) for req in self.queue)} prompts still outstanding")
         
@@ -131,8 +144,8 @@ class LLMHandler:
 llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2")
 
 logLine("Setting up requests...")
-capital_request = llm_handler.request(["What is the capital of France?"] * 5, {"city": str})
-country_request = llm_handler.request(["Which country is Paris inside?"] * 5, {"country": str})
+capital_request = llm_handler.request([f"What is the capital of {c}?" for c in ["France", "Germany", "Italy", "Spain", "United Kingdom"]], {"city": str})
+country_request = llm_handler.request([f"Which country is {c} inside?" for c in ["Paris", "Berlin", "Rome", "Madrid", "London"]], {"country": str})
 reword_request = llm_handler.request(["Reword this sentence: I like to eat apples."] * 2, {"reworded": str}, enforce_unique=True)
 logLine("Requests set up.")
 
