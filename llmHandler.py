@@ -71,7 +71,7 @@ class LLMHandler:
             field_str = f"field '{fields[0]}'"
         else:
             field_str = "fields '" + "', '".join(fields[:-1]) + f"' and '{fields[-1]}'"
-        return f"Output your response in JSON format with the {field_str}. Surround your JSON output with <result></result> tags."
+        return f" Output your response in JSON format with the {field_str}. Surround your JSON output with <result></result> tags."
     
     def _generate_batch(self, prompts: List[str]) -> List[str]:
         for i,p in enumerate(prompts):
