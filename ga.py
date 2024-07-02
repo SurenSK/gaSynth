@@ -132,6 +132,9 @@ def fitness(individual, task):
         elif isinstance(extracted['relevant'], list):
             deception_scores = evaluate_obviousness(response_jsons[i], task)
             nonzero_deceptions = [d for d in deception_scores if d > 0]
+            # make nonzero_deceptions an np array
+            nonzero_deceptions = np.array(nonzero_deceptions)
+            logLine(f"Deception Scores: {nonzero_deceptions}")
             mean, std = np.mean(nonzero_deceptions), np.std(nonzero_deceptions)
             deception = mean + 4*std
     logLine(f"\t\tQuestion Set Eval - Malform Rate: {malformed}/{len(questions_responses)}")
