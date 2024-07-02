@@ -50,8 +50,8 @@ class LLMHandler:
             raise ValueError("HUGGINGFACE_TOKEN is not set in the environment.")
         
         tokenizer = AutoTokenizer.from_pretrained(self.model_id, token=token)
-        model = AutoModelForCausalLM.from_pretrained(self.model_id, token=token, cache_dir=".",
-            torch_dtype=torch.bfloat16, device_map="auto")
+        model = AutoModelForCausalLM.from_pretrained(self.model_id, token=token, cache_dir=".", 
+            torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
         model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
         
         llm = pipeline("text-generation", model=model, tokenizer=tokenizer, 
@@ -123,7 +123,7 @@ class LLMHandler:
             logLine(f"Master list size: {len(master_list)}")
             
             if len(master_list) < self.batch_size:
-                multiplication_factor = max(10, (self.batch_size // len(master_list) + 1))
+                multiplication_factor = min(10, (self.batch_size // len(master_list) + 1))
                 master_list = master_list * multiplication_factor
                 logLine(f"Extended master list to size: {len(master_list)}")
             
