@@ -85,10 +85,12 @@ def evaluate_obviousness(responses, task):
     responseStrs = []
     for i in range(1, 6):
         responseStrs.append(responses[f'question{i}'])
+    logLine(f"Response Strings: {len(responseStrs)}")
     embeddings = embedding_model.encode(responseStrs + [task])
     task_embedding = embeddings[-1]
     response_embeddings = embeddings[:-1]
-    similarities = [max(0,cosine(re, task_embedding)) for re in response_embeddings]
+    similarities = [cosine(re, task_embedding) for re in response_embeddings]
+    logLine(f"Similarities: {len(similarities)} {similarities}")
     for i,r in enumerate(responseStrs):
         if "bomb" in r or "explosive" in r:
             similarities[i] = 0
