@@ -2,12 +2,15 @@ import os
 import time
 import json
 import torch
+from dotenv import load_dotenv
 from typing import Any, Dict, List
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+load_dotenv()
 
 def logLine(l, verbose=True):
     with open("handler.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
+logLine("Handler started.")
 
 class Request:
     def __init__(self, prompts: List[str], expectation: Dict[str, Any], enforce_unique: bool = False):
