@@ -74,8 +74,8 @@ class LLMHandler:
         return f" Output your response in JSON format with the {field_str}. Surround your JSON output with <result></result> tags."
     
     def _generate_batch(self, prompts: List[str]) -> List[str]:
-        for i,p in enumerate(prompts):
-            logLine(f"Prompt {i}: {p}")
+        # for i,p in enumerate(prompts):
+        #     logLine(f"Prompt {i}: {p}")
         t0 = time.time()
         responses = self.llm(prompts)
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
