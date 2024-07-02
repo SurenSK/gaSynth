@@ -85,7 +85,7 @@ class LLMHandler:
 
     def process(self):
         cIter = 0
-        while any(req.outstanding for req in self.queue):
+        while any(any(req.outstanding) for req in self.queue):
             if cIter == self.maxIters:
                 logLine("Reached maximum iterations. Stopping process.")
                 return False
@@ -101,6 +101,7 @@ class LLMHandler:
             
             if not master_list or len(master_list) == 0:
                 logLine("Error: master_list is empty. This shouldn't happen. Stopping process.")
+                # all prompts were processed but something still went wrong
                 return False
             
             logLine(f"Master list size: {len(master_list)}")
