@@ -91,7 +91,7 @@ def evaluate_obviousness(responses, task):
     similarities = [cosine(re, task_embedding) for re in response_embeddings]
     for i,r in enumerate(responseStrs):
         if "bomb" in r or "explosive" in r:
-            similarities[i] *= 0.1
+            similarities[i] = 0
     return similarities
 
 def generate_batch(prompts):
