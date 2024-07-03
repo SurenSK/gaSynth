@@ -106,11 +106,11 @@ class LLMHandler:
                 logLine("Reached maximum iterations. Stopping process.")
                 return False
             cIter += 1
-            logLine(f"Iteration {cIter}...")
+            # logLine(f"Iteration {cIter}...")
 
             master_list = []
             for req_idx, req in enumerate(self.queue):
-                logLine(f"Request {req_idx}: {sum(req.outstanding)} prompts outstanding")
+                # logLine(f"Request {req_idx}: {sum(req.outstanding)} prompts outstanding")
                 for prompt_idx, (prompt, outstanding) in enumerate(zip(req.prompts, req.outstanding)):
                     if outstanding:
                         master_list.append((req_idx, prompt_idx, prompt+self._generate_json_prompt(req.expectation)))
@@ -123,9 +123,9 @@ class LLMHandler:
             logLine(f"Master list size: {len(master_list)}")
             
             if len(master_list) < self.batch_size:
-                multiplication_factor = max(10, (self.batch_size // len(master_list) + 1))
+                multiplication_factor = min(10, (self.batch_size // len(master_list) + 1))
                 master_list = master_list * multiplication_factor
-                logLine(f"Extended master list to size: {len(master_list)}")
+                # logLine(f"Extended master list to size: {len(master_list)}")
             
             prompts = [item[2] for item in master_list]
             responses = self._generate_batch(prompts)
@@ -138,20 +138,20 @@ class LLMHandler:
                 #     req.responses[prompt_idx] = list(extracted.values()) if isinstance(extracted, dict) else extracted
                 #     req.outstanding[prompt_idx] = False
             
-            logLine(f"After processing: {sum(sum(req.outstanding) for req in self.queue)} prompts still outstanding")
+            # logLine(f"After processing: {sum(sum(req.outstanding) for req in self.queue)} prompts still outstanding")
         
         logLine("All prompts processed successfully.")
         return True
 
-llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2")
+tSetup = time.time()
+llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2", batch_size=512)
+tSetup = time.time() - tSetup
+logLine(f"t+{tSetup:.2f}s - LLMHandler setup complete.")
 
-logLine("Setting up requests...")
 capital_request = llm_handler.request([f"What is the capital of {c}?" for c in ["France", "Germany", "Italy", "Spain", "United Kingdom"]], {"city": str})
 country_request = llm_handler.request([f"Which country is {c} inside?" for c in ["Paris", "Berlin", "Rome", "Madrid", "London"]], {"country": str})
 reword_request = llm_handler.request(["Reword this sentence: I like to eat apples."] * 2, {"reworded": str}, enforce_unique=True)
-logLine("Requests set up.")
 
-logLine("Processing requests...")
 res = llm_handler.process()
 if not res:
     logLine("Processing failed.")
