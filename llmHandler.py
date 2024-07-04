@@ -12,8 +12,9 @@ def logLine(l, verbose=True):
     with open("handler.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
 logLine("Handler started.")
-# check transformers version
-logLine(f"Transformers version: {pipeline.__version__}")
+import transformers
+print(transformers.__version__)
+
 
 class Request:
     def __init__(self, prompts: List[str], expectation: Dict[str, Any], enforce_unique: bool = False):
