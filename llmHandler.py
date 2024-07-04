@@ -133,10 +133,9 @@ class LLMHandler:
             
             # logLine(f"Master list size: {len(master_list)}")
             
-            if len(master_list) < self.batch_size:
-                multiplication_factor = min(10, (self.batch_size // len(master_list) + 1))
-                logLine(f"Expanding master list from {len(master_list)} to {len(master_list) * multiplication_factor}.")
-                master_list = master_list * multiplication_factor
+            multiplication_factor = min(10, (self.batch_size // len(master_list) + 1))
+            logLine(f"Expanding master list from {len(master_list)} to {len(master_list) * multiplication_factor}.")
+            master_list = master_list * multiplication_factor
             
             prompts = [item[2] for item in master_list]
             totalRequests += len(prompts)
