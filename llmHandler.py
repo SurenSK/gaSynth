@@ -148,7 +148,7 @@ class LLMHandler:
         # logLine("All prompts processed successfully.")
         totalTokens = 0
         for req in self.queue:
-            totalToks += sum(len(self.llm.tokenizer.encode(r)) if isinstance(r, str) else 0 for r in responses)
+            totalTokens += sum(len(self.llm.tokenizer.encode(r)) if isinstance(r, str) else 0 for r in responses)
         return (totalRequests, totalMalformed, time.time() - tProcess, totalTokens)
 
 if __name__ == "__main__":
