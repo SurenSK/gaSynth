@@ -13,7 +13,8 @@ def logLine(l, verbose=True):
         log_file.write(str(l) + "\n")
 logLine("Handler started.")
 import transformers
-print(transformers.__version__)
+print("Transformers module path:", transformers.__file__)
+
 
 
 class Request:
