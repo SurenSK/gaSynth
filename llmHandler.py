@@ -24,7 +24,7 @@ class Request:
     
     def add_response(self, prompt_idx: int, response: Any):
         if isinstance(response, Exception):
-            return False
+            return True
         if self.enforce_unique:
             i=len(self.unique_responses)
             respStr = response.values() if isinstance(response, dict) else response
@@ -33,13 +33,13 @@ class Request:
             if len(self.unique_responses) > i:
                 self.responses[prompt_idx] = response
                 self.outstanding[prompt_idx] = False
-                return True
-            else:
                 return False
+            else:
+                return True
         else:
             self.responses[prompt_idx] = response
             self.outstanding[prompt_idx] = False
-            return True
+            return False
 
 class LLMHandler:
     def __init__(self, model_id: str, batch_size: int = 256):
@@ -149,21 +149,24 @@ class LLMHandler:
         totalTokens = 0
         for req in self.queue:
             totalTokens += sum(len(self.llm.tokenizer.encode(r)) if isinstance(r, str) else 0 for r in responses)
+            logLine(f"Prompt: {req.prompts[0]}")
+            logLine(f"Response: {req.responses[0]}")
         return (totalRequests, totalMalformed, time.time() - tProcess, totalTokens)
 
 if __name__ == "__main__":
     templates = [
-        "Reword the given sentence. Output your response in JSON format with the {field_description}. Surround your JSON output with <result></result> tags.",
-        "Your task is to rephrase the provided sentence. Respond only with JSON containing the {field_description}. Wrap the JSON in <result></result> tags.",
-        "Rewrite the following sentence in your own words. Use JSON format with the {field_description} for your answer. Enclose the JSON within <result></result> tags.",
-        "Provide an alternative wording for the given sentence. Return a JSON object with the {field_description}. Place the JSON inside <result></result> tags.",
-        "Transform the provided sentence into a new one with the same meaning. Respond using JSON with the {field_description}. Surround the JSON with <result></result> tags.",
-        "Rephrase the sentence below. Your output should be valid JSON with the {field_description}, wrapped in <result></result> tags. Do not include any other text.",
-        "Rewrite the given sentence. Output a JSON object containing only the {field_description}. Enclose the JSON in <result></result> tags. No additional text.",
-        "Your job is to reword the provided sentence. Respond with nothing but JSON, having the {field_description}, surrounded by <result></result> tags.",
-        "Rephrase the following sentence. Return a JSON structure with the {field_description}. Wrap the JSON in <result></result> tags. No other output.",
-        "Rewrite the sentence in different words. Provide a JSON response with the {field_description}. Use <result></result> tags around the JSON. No extra text."
+        "Output your response in JSON format with the {field_description}. Surround your JSON output with <result></result> tags.",
+        "Respond only with JSON containing the {field_description}. Wrap the JSON in <result></result> tags.",
+        "Use JSON format with the {field_description} for your answer. Enclose the JSON within <result></result> tags.",
+        "Return a JSON object with the {field_description}. Place the JSON inside <result></result> tags.",
+        "Respond using JSON with the {field_description}. Surround the JSON with <result></result> tags.",
+        "Your output should be valid JSON with the {field_description}, wrapped in <result></result> tags. Do not include any other text.",
+        "Output a JSON object containing only the {field_description}. Enclose the JSON in <result></result> tags. No additional text.",
+        "Respond with nothing but JSON, having the {field_description}, surrounded by <result></result> tags.",
+        "Return a JSON structure with the {field_description}. Wrap the JSON in <result></result> tags. No other output.",
+        "Provide a JSON response with the {field_description}. Use <result></result> tags around the JSON. No extra text."
     ]
+
     templates = {k: None for k in templates}
     tSetup = time.time()
     llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2", batch_size=256)
@@ -171,6 +174,7 @@ if __name__ == "__main__":
     logLine(f"t+{tSetup:.2f}s - LLMHandler setup complete.")
     for template in templates.keys():
         llm_handler.jsonTemplate = template
+        logLine(f"Processing template: {template}")
         capital_request = llm_handler.request([f"What is the capital of {c}?" for c in ["France", "Germany", "Italy", "Spain", "United Kingdom"]], {"city": str})
         country_request = llm_handler.request([f"Which country is {c} inside?" for c in ["Paris", "Berlin", "Rome", "Madrid", "London"]], {"country": str})
         reword_request = llm_handler.request(["Reword this sentence: I like to eat apples."] * 2, {"reworded": str}, enforce_unique=True)
@@ -178,7 +182,6 @@ if __name__ == "__main__":
             [f"Tell me a story about {topic}." for topic in ["courage", "betrayal", "adventure", "friendship", "discovery"]]*100,
             {"story": str}
         )
-
 
         res = llm_handler.process()
         if res:
