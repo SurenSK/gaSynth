@@ -5,7 +5,7 @@ import torch
 from dotenv import load_dotenv
 from typing import Any, Dict, List
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-from mistral_common.tokens.tokenizers.mistral import MistralTokenizer
+# from mistral_common.tokens.tokenizers.mistral import MistralTokenizer
 load_dotenv()
 
 def logLine(l, verbose=True):
@@ -55,8 +55,8 @@ class LLMHandler:
         if token is None:
             raise ValueError("HUGGINGFACE_TOKEN is not set in the environment.")
         
-        # tokenizer = AutoTokenizer.from_pretrained(self.model_id, token=token)
-        tokenizer = MistralTokenizer.v1()
+        tokenizer = AutoTokenizer.from_pretrained(self.model_id, token=token)
+        # tokenizer = MistralTokenizer.v1()
         model = AutoModelForCausalLM.from_pretrained(self.model_id, token=token, cache_dir=".", 
             torch_dtype=torch.bfloat16, device_map="auto")
         model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
