@@ -23,7 +23,7 @@ class Request:
     
     def add_response(self, prompt_idx: int, response: Any):
         if isinstance(response, Exception):
-            return
+            return False
         if self.enforce_unique:
             i=len(self.unique_responses)
             respStr = response.values() if isinstance(response, dict) else response
@@ -32,9 +32,13 @@ class Request:
             if len(self.unique_responses) > i:
                 self.responses[prompt_idx] = response
                 self.outstanding[prompt_idx] = False
+                return True
+            else:
+                return False
         else:
             self.responses[prompt_idx] = response
             self.outstanding[prompt_idx] = False
+            return True
 
 class LLMHandler:
     def __init__(self, model_id: str, batch_size: int = 256):
@@ -43,6 +47,7 @@ class LLMHandler:
         self.queue = []
         self.llm = self._set_llm()
         self.maxIters = 5
+        self.jsonTemplate = None
 
     def _set_llm(self):
         token = os.getenv('HUGGINGFACE_TOKEN')
@@ -79,15 +84,17 @@ class LLMHandler:
             return parsed_json
         except Exception as e:
             return e
-
-    def _generate_json_prompt(self, expectation: Dict[str, Any]) -> str:
+    
+    def generate_json_prompt(self, expectation: Dict[str, Any]) -> str:
+        if self.jsonTemplate is None:
+            template = "Output your response in JSON format with the {field_description}. Surround your JSON output with <result></result> tags."
         fields = list(expectation.keys())
         if len(fields) == 1:
-            field_str = f"field '{fields[0]}'"
+            field_description = f"field '{fields[0]}'"
         else:
-            field_str = "fields '" + "', '".join(fields[:-1]) + f"' and '{fields[-1]}'"
-        return f" Output your response in JSON format with the {field_str}. Surround your JSON output with <result></result> tags."
-    
+            field_description = "fields '" + "', '".join(fields[:-1]) + f"' and '{fields[-1]}'"
+        return template.format(field_description=field_description)
+
     def _generate_batch(self, prompts: List[str]) -> List[str]:
         # for i,p in enumerate(prompts):
         #     logLine(f"Prompt {i}: {p}")
@@ -100,11 +107,14 @@ class LLMHandler:
         return responses
 
     def process(self):
+        totalMalformed = 0
+        totalRequests = 0
         cIter = 0
+        tProcess = time.time()
         while any(any(req.outstanding) for req in self.queue):
             if cIter == self.maxIters:
                 logLine("Reached maximum iterations. Stopping process.")
-                return False
+                break
             cIter += 1
             # logLine(f"Iteration {cIter}...")
 
@@ -118,46 +128,63 @@ class LLMHandler:
             if not master_list or len(master_list) == 0:
                 logLine("Error: master_list is empty. This shouldn't happen. Stopping process.")
                 # all prompts were processed but something still went wrong
-                return False
+                break
             
-            logLine(f"Master list size: {len(master_list)}")
+            # logLine(f"Master list size: {len(master_list)}")
             
             if len(master_list) < self.batch_size:
                 multiplication_factor = max(10, (self.batch_size // len(master_list) + 1))
                 master_list = master_list * multiplication_factor
-                # logLine(f"Extended master list to size: {len(master_list)}")
             
             prompts = [item[2] for item in master_list]
+            totalRequests += len(prompts)
             responses = self._generate_batch(prompts)
 
             for (req_idx, prompt_idx, _), response in zip(master_list, responses):
                 req = self.queue[req_idx]
                 extracted = self._extract_json(response, req.expectation)
-                req.add_response(prompt_idx, extracted)
-                # if not isinstance(extracted, Exception) and (not req.enforce_unique or extracted not in req.responses):
-                #     req.responses[prompt_idx] = list(extracted.values()) if isinstance(extracted, dict) else extracted
-                #     req.outstanding[prompt_idx] = False
-            
-            # logLine(f"After processing: {sum(sum(req.outstanding) for req in self.queue)} prompts still outstanding")
-        
-        logLine("All prompts processed successfully.")
-        return True
+                totalMalformed += req.add_response(prompt_idx, extracted)
+        # logLine("All prompts processed successfully.")
+        totalTokens = 0
+        for req in self.queue:
+            totalTokens += sum(len(self.llm.tokenizer.encode(r)) if r else 0 for r in req.responses)
+        return (totalRequests, totalMalformed, time.time() - tProcess, totalTokens)
 
-tSetup = time.time()
-llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2", batch_size=512)
-tSetup = time.time() - tSetup
-logLine(f"t+{tSetup:.2f}s - LLMHandler setup complete.")
+if __name__ == "__main__":
+    templates = [
+        "Reword the given sentence. Output your response in JSON format with the {field_description}. Surround your JSON output with <result></result> tags.",
+        "Your task is to rephrase the provided sentence. Respond only with JSON containing the {field_description}. Wrap the JSON in <result></result> tags.",
+        "Rewrite the following sentence in your own words. Use JSON format with the {field_description} for your answer. Enclose the JSON within <result></result> tags.",
+        "Provide an alternative wording for the given sentence. Return a JSON object with the {field_description}. Place the JSON inside <result></result> tags.",
+        "Transform the provided sentence into a new one with the same meaning. Respond using JSON with the {field_description}. Surround the JSON with <result></result> tags.",
+        "Rephrase the sentence below. Your output should be valid JSON with the {field_description}, wrapped in <result></result> tags. Do not include any other text.",
+        "Rewrite the given sentence. Output a JSON object containing only the {field_description}. Enclose the JSON in <result></result> tags. No additional text.",
+        "Your job is to reword the provided sentence. Respond with nothing but JSON, having the {field_description}, surrounded by <result></result> tags.",
+        "Rephrase the following sentence. Return a JSON structure with the {field_description}. Wrap the JSON in <result></result> tags. No other output.",
+        "Rewrite the sentence in different words. Provide a JSON response with the {field_description}. Use <result></result> tags around the JSON. No extra text."
+    ]
+    templates = {k: None for k in templates}
+    tSetup = time.time()
+    llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2", batch_size=256)
+    tSetup = time.time() - tSetup
+    logLine(f"t+{tSetup:.2f}s - LLMHandler setup complete.")
+    for template in templates.keys():
+        llm_handler.jsonTemplate = template
+        capital_request = llm_handler.request([f"What is the capital of {c}?" for c in ["France", "Germany", "Italy", "Spain", "United Kingdom"]], {"city": str})
+        country_request = llm_handler.request([f"Which country is {c} inside?" for c in ["Paris", "Berlin", "Rome", "Madrid", "London"]], {"country": str})
+        reword_request = llm_handler.request(["Reword this sentence: I like to eat apples."] * 2, {"reworded": str}, enforce_unique=True)
+        story_request = llm_handler.request(
+            [f"Tell me a story about {topic}." for topic in ["courage", "betrayal", "adventure", "friendship", "discovery"]]*100,
+            {"story": str}
+        )
 
-capital_request = llm_handler.request([f"What is the capital of {c}?" for c in ["France", "Germany", "Italy", "Spain", "United Kingdom"]], {"city": str})
-country_request = llm_handler.request([f"Which country is {c} inside?" for c in ["Paris", "Berlin", "Rome", "Madrid", "London"]], {"country": str})
-reword_request = llm_handler.request(["Reword this sentence: I like to eat apples."] * 2, {"reworded": str}, enforce_unique=True)
 
-res = llm_handler.process()
-if not res:
-    logLine("Processing failed.")
-else:
-    logLine("Requests processed.")
-
-logLine(capital_request.responses)
-logLine(country_request.responses)
-logLine(reword_request.responses)
+        res = llm_handler.process()
+        if res:
+            totalRequests, totalMalformed, tProcess, nToks = res
+            validRate = nToks / tProcess
+            templates[template] = validRate
+            logLine(f"Template: {template} - Rate {validRate:.2f} valid responses per second.")
+    logLine("All templates processed.")
+    with open("jsonTemplates.json", "w") as f:
+        json.dump(templates, f)
