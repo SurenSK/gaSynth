@@ -14,7 +14,7 @@ def logLine(l, verbose=True):
 logLine("Handler started.")
 import transformers
 print("Transformers module path:", transformers.__file__)
-
+print("Transformers version:", transformers.__version__)
 
 
 class Request:
