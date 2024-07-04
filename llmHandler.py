@@ -87,7 +87,7 @@ class LLMHandler:
         except Exception as e:
             return e
     
-    def generate_json_prompt(self, expectation: Dict[str, Any]) -> str:
+    def _generate_json_prompt(self, expectation: Dict[str, Any]) -> str:
         if self.jsonTemplate is None:
             template = "Output your response in JSON format with the {field_description}. Surround your JSON output with <result></result> tags."
         fields = list(expectation.keys())
