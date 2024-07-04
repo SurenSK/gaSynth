@@ -61,7 +61,7 @@ class LLMHandler:
         model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
         
         llm = pipeline("text-generation", model=model, tokenizer=tokenizer, 
-                       do_sample=True, temperature=0.8, batch_size=self.batch_size, max_new_tokens=256)
+                       do_sample=True, temperature=0.8, batch_size=self.batch_size, max_new_tokens=1024)
         llm.tokenizer.pad_token_id = model.config.eos_token_id
         return llm
 
