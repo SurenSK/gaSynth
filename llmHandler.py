@@ -104,7 +104,7 @@ class LLMHandler:
         tGen = time.time() - tGen
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         totalToks = sum(len(self.llm.tokenizer.encode(r)) for r in responses)
-        logLine(f"t+{tGen:.2f}s - Generated {len(prompts)} responses - {totalToks/tGen:.0f}toks")
+        logLine(f"t+{tGen:.2f}s - Generated {len(prompts)} responses - {totalToks} tokens - {totalToks/tGen:.0f}toks")
         return responses
 
     def process(self):
@@ -148,7 +148,7 @@ class LLMHandler:
         # logLine("All prompts processed successfully.")
         totalTokens = 0
         for req in self.queue:
-            totalTokens += sum(len(self.llm.tokenizer.encode(r)) if isinstance(r, str) else 0 for r in responses)
+            totalTokens += sum(len(self.llm.tokenizer.encode(r)) if isinstance(r, str) and not o else 0 for r,o in zip(responses, outstanding))
             logLine(f"Prompt: {req.prompts[0]}")
             logLine(f"Response: {req.responses[0]}")
         return (totalRequests, totalMalformed, time.time() - tProcess, totalTokens)
@@ -189,7 +189,7 @@ if __name__ == "__main__":
             totalRequests, totalMalformed, tProcess, nToks = res
             validRate = nToks / tProcess
             templates[template] = validRate
-            logLine(f"###Finished Process Template\nTemplate: {template} - Rate {validRate:.2f} valid responses per second.\n")
+            logLine(f"###Finished Process Template\nTemplate: {template} - Rate {validRate:.2f} valid toks per second.\n")
     logLine("All templates processed.")
     with open("jsonTemplates.json", "w") as f:
         json.dump(templates, f)
