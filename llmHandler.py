@@ -154,6 +154,7 @@ class LLMHandler:
         return (totalRequests, totalMalformed, time.time() - tProcess, totalTokens)
 
 if __name__ == "__main__":
+    tMain = time.time()
     templates = [
         "Output your response in JSON format with the {field_description}. Surround your JSON output with <result></result> tags.",
         "Respond only with JSON containing the {field_description}. Wrap the JSON in <result></result> tags.",
@@ -192,3 +193,4 @@ if __name__ == "__main__":
     logLine("All templates processed.")
     with open("jsonTemplates.json", "w") as f:
         json.dump(templates, f)
+    logLine(f"Total time: {time.time() - tMain:.2f}s")
