@@ -189,7 +189,7 @@ if __name__ == "__main__":
             totalRequests, totalMalformed, tProcess, nToks = res
             validRate = nToks / tProcess
             templates[template] = validRate
-            logLine(f"Template: {template} - Rate {validRate:.2f} valid responses per second.")
+            logLine(f"###Finished Process Template\nTemplate: {template} - Rate {validRate:.2f} valid responses per second.\n")
     logLine("All templates processed.")
     with open("jsonTemplates.json", "w") as f:
         json.dump(templates, f)
