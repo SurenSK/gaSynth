@@ -57,7 +57,7 @@ class LLMHandler:
         
         # tokenizer = AutoTokenizer.from_pretrained(self.model_id, token=token)
         tokenizer = MistralTokenizer.v1()
-        model = AutoModelForCausalLM.from_pretrained(self.model_id, tokenizer=tokenizer, token=token, cache_dir=".", 
+        model = AutoModelForCausalLM.from_pretrained(self.model_id, token=token, cache_dir=".", 
             torch_dtype=torch.bfloat16, device_map="auto")
         model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
         
