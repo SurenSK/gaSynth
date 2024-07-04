@@ -89,13 +89,13 @@ class LLMHandler:
     
     def _generate_json_prompt(self, expectation: Dict[str, Any]) -> str:
         if self.jsonTemplate is None:
-            template = "Output your response in JSON format with the {field_description}. Surround your JSON output with <result></result> tags."
+            self.jsonTemplate = "Output your response in JSON format with the {field_description}. Surround your JSON output with <result></result> tags."
         fields = list(expectation.keys())
         if len(fields) == 1:
             field_description = f"field '{fields[0]}'"
         else:
             field_description = "fields '" + "', '".join(fields[:-1]) + f"' and '{fields[-1]}'"
-        return template.format(field_description=field_description)
+        return self.jsonTemplate.format(field_description=field_description)
 
     def _generate_batch(self, prompts: List[str]) -> List[str]:
         # for i,p in enumerate(prompts):
