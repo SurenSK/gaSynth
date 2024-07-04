@@ -12,10 +12,6 @@ def logLine(l, verbose=True):
     with open("handler.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
 logLine("Handler started.")
-import transformers
-print("Transformers module path:", transformers.__file__)
-print("Transformers version:", transformers.__version__)
-
 
 class Request:
     def __init__(self, prompts: List[str], expectation: Dict[str, Any], enforce_unique: bool = False):
