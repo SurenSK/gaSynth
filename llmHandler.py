@@ -42,7 +42,7 @@ class Request:
             return False
 
 class LLMHandler:
-    def __init__(self, model_id: str, batch_size: int = 256):
+    def __init__(self, model_id: str, batch_size: int):
         self.model_id = model_id
         self.batch_size = batch_size
         self.queue = []
