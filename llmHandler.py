@@ -12,6 +12,8 @@ def logLine(l, verbose=True):
     with open("handler.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
 logLine("Handler started.")
+# check transformers version
+logLine(f"Transformers version: {pipeline.__version__}")
 
 class Request:
     def __init__(self, prompts: List[str], expectation: Dict[str, Any], enforce_unique: bool = False):
@@ -56,7 +58,6 @@ class LLMHandler:
             raise ValueError("HUGGINGFACE_TOKEN is not set in the environment.")
         
         tokenizer = AutoTokenizer.from_pretrained(self.model_id, token=token)
-        # tokenizer = MistralTokenizer.v1()
         model = AutoModelForCausalLM.from_pretrained(self.model_id, token=token, cache_dir=".", 
             torch_dtype=torch.bfloat16, device_map="auto")
         model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
