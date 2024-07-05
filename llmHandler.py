@@ -11,7 +11,10 @@ load_dotenv()
 def logLine(l, verbose=True):
     with open("handler.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
+
+logLine("*"*120)
 logLine("Handler started.")
+logLine("*"*120)
 
 class Request:
     def __init__(self, prompts: List[str], expectation: Dict[str, Any], enforce_unique: bool = False):
@@ -126,7 +129,7 @@ class LLMHandler:
         tGen = time.time() - tGen
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         totalToks = sum(len(self.llm.tokenizer.encode(r)) for r in responses)
-        logLine(f"\tt+{tGen:.2f}s - Generated {len(prompts)} responses - {totalToks} tokens - {totalToks/tGen:.0f}toks")
+        logLine(f"\tt+{tGen:3.0f}s - Generated {len(prompts)} responses - {totalToks:5d} tokens - {totalToks/tGen:4.0f}toks")
         return responses
 
     def process(self):
