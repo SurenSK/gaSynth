@@ -201,12 +201,16 @@ class LLMHandler:
                         processCounters["bad_values"] += 1
 
         totalValidTokens = 0
+        totalRequests = 0
+        totalOutstanding = 0
         for req in self.queue:
             totalValidTokens += sum(len(self.llm.tokenizer.encode(str(r))) if r and not o else 0 for r, o in zip(req.responses, req.outstanding))
+            totalRequests += len(req.prompts)
+            totalOutstanding += sum(req.outstanding)
             # logLine(f"Prompt: {req.prompts[0]}")
             # logLine(f"Response: {req.responses[0]}")
         
-        return (processCounters, time.time() - tProcess, totalValidTokens, totalTokens)
+        return (processCounters, time.time() - tProcess, totalValidTokens, totalTokens, totalRequests, totalOutstanding)
 
 if __name__ == "__main__":
     tMain = time.time()
@@ -241,7 +245,7 @@ if __name__ == "__main__":
 
         res = llm_handler.process()
         if res:
-            counters, tProcess, totalValidTokens, totalTokens = res
+            counters, tProcess, totalValidTokens, totalTokens, totalReq, totalOut = res
             vToksRate = totalValidTokens / tProcess
             vToksRatio = totalValidTokens / totalTokens
             vSampleRate = counters["valid"] / tProcess
@@ -249,7 +253,7 @@ if __name__ == "__main__":
             templates[template] = vToksRate
             logLine(f"###Finished Processing Template")
             logLine(f"Template: {template}")
-            logLine(f"+{tProcess:.2f}s Total Valid: {counters['total']}S {totalValidTokens}T - Ratio: {counters["total"]/counters["valid"]*100:2.0f}%S {vToksRatio*100:2.0f}%T - {vSampleRate:.0f}sams {vToksRate:.0f}toks")
+            logLine(f"+{tProcess:.2f}s Processed: {totalReq-totalOut}/{totalReq} - Ratio: {((totalReq-totalOut)/totalReq)*100:2.0f}%S {vToksRatio*100:2.0f}%T - {vSampleRate:.0f}sams {vToksRate:.0f}toks")
             logLine("Counters:")
             for error_type, count in counters.items():
                 logLine(f"   {error_type}: {count}")
