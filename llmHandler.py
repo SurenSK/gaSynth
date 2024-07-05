@@ -34,7 +34,7 @@ class Request:
             respStr = " ".join(respStr) if isinstance(respStr, list) else respStr
             self.unique_responses.add(respStr)
             if len(self.unique_responses) > i:
-                self.responses[prompt_idx] = response
+                self.responses[prompt_idx] = str(response)
                 self.outstanding[prompt_idx] = False
             else:
                 raise ValueError("Duplicate response detected")
