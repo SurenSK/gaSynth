@@ -253,7 +253,7 @@ if __name__ == "__main__":
             templates[template] = vToksRate
             logLine(f"###Finished Processing Template")
             logLine(f"Template: {template}")
-            logLine(f"+{tProcess:.2f}s Processed: {totalReq-totalOut}/{totalReq} - Ratio: {(counters["valid"]/counters["total"])*100:2.0f}%S {vToksRatio*100:2.0f}%T - {vSampleRate:3.1f}sams {vToksRate:.0f}toks")
+            logLine(f"+{tProcess:.2f}s Processed: {totalReq-totalOut}/{totalReq} - Ratio: {(counters['valid']/counters['total'])*100:2.0f}%S {vToksRatio*100:2.0f}%T - {vSampleRate:3.1f}sams {vToksRate:.0f}toks")
             logLine("Counters:")
             for error_type, count in counters.items():
                 logLine(f"   {error_type}: {count}")
