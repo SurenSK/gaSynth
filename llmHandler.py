@@ -194,13 +194,13 @@ class LLMHandler:
                 except KeyError:
                     processCounters["bad_keys"] += 1
                 except TypeError:
-                    logLine(f"Unexpected error: {str(e)}")
+                    # logLine(f"Unexpected error: {str(e)}")
                     processCounters["bad_values"] += 1
                 except Exception as e:
                     if "Duplicate response detected" in str(e):
                         processCounters["repeat"] += 1
                     else:
-                        logLine(f"Unexpected error: {str(e)}")
+                        # logLine(f"Unexpected error: {str(e)}")
                         processCounters["bad_values"] += 1
 
         totalValidTokens = 0
