@@ -5,15 +5,18 @@ import torch
 from dotenv import load_dotenv
 from typing import Any, Dict, List
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-# from mistral_common.tokens.tokenizers.mistral import MistralTokenizer
+from datetime import datetime
+
 load_dotenv()
 
 def logLine(l, verbose=True):
     with open("handler.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
 
+current_datetime = datetime.now()
+formatted_datetime = current_datetime.strftime("%Y-%B-%d %I:%M%p")
 logLine("*"*120)
-logLine("Handler started.")
+logLine(f"Handler started.\t{formatted_datetime}")
 logLine("*"*120)
 
 class Request:
