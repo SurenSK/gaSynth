@@ -130,7 +130,7 @@ class LLMHandler:
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         totalToks = sum(len(self.llm.tokenizer.encode(r)) for r in responses)
         logLine(f"\tt+{tGen:3.0f}s - Generated {len(prompts)} responses - {totalToks:5d} tokens - {totalToks/tGen:4.0f}toks")
-        return responses
+        return totalToks, responses
 
     def process(self):
         processCounters = {
@@ -144,6 +144,7 @@ class LLMHandler:
             "repeat": 0
         }
         cIter = 0
+        totalTokens = 0
         tProcess = time.time()
         
         while any(any(req.outstanding) for req in self.queue):
@@ -168,7 +169,8 @@ class LLMHandler:
             
             prompts = [item[2] for item in master_list]
             processCounters["total"] += len(prompts)
-            responses = self._generate_batch(prompts)
+            rawTokens, responses = self._generate_batch(prompts)
+            totalTokens += rawTokens
 
             for (req_idx, prompt_idx, _), response in zip(master_list, responses):
                 req = self.queue[req_idx]
@@ -196,14 +198,15 @@ class LLMHandler:
                         processCounters["repeat"] += 1
                     else:
                         logLine(f"Unexpected error: {str(e)}")
+                        processCounters["bad_values"] += 1
 
-        totalTokens = 0
+        totalValidTokens = 0
         for req in self.queue:
-            totalTokens += sum(len(self.llm.tokenizer.encode(str(r))) if r and not o else 0 for r, o in zip(req.responses, req.outstanding))
+            totalValidTokens += sum(len(self.llm.tokenizer.encode(str(r))) if r and not o else 0 for r, o in zip(req.responses, req.outstanding))
             # logLine(f"Prompt: {req.prompts[0]}")
             # logLine(f"Response: {req.responses[0]}")
         
-        return (processCounters, time.time() - tProcess, totalTokens)
+        return (processCounters, time.time() - tProcess, totalValidTokens, totalTokens)
 
 if __name__ == "__main__":
     tMain = time.time()
@@ -238,12 +241,14 @@ if __name__ == "__main__":
 
         res = llm_handler.process()
         if res:
-            counters, tProcess, nToks = res
-            validRate = nToks / tProcess
-            templates[template] = validRate
+            counters, tProcess, totalValidTokens, totalTokens = res
+            vToksRate = totalValidTokens / tProcess
+            vToksRatio = totalValidTokens / totalTokens
+
+            templates[template] = vToksRate
             logLine(f"###Finished Processing Template")
             logLine(f"Template: {template}")
-            logLine(f"+{tProcess:.2f}s Total Valid Tokens: {nToks} - {validRate:.2f}toks")
+            logLine(f"+{tProcess:.2f}s Total Valid Tokens: {totalValidTokens} - Ratio {vToksRatio*100:2.0f}% - {vToksRate:.2f}toks")
             logLine("Counters:")
             for error_type, count in counters.items():
                 logLine(f"   {error_type}: {count}")
