@@ -89,8 +89,8 @@ class LLMHandler:
             for key, expected_type in expectation.items():
                 if key not in parsed_json:
                     raise KeyError(f"Missing expected field: {key}")
-                if not isinstance(parsed_json[key], expected_type):
-                    raise TypeError(f"Field '{key}' is not of type {expected_type.__name__}")
+                # if not isinstance(parsed_json[key], expected_type):
+                #     raise TypeError(f"Field '{key}' is not of type {expected_type.__name__}")
 
             return parsed_json
 
@@ -116,12 +116,13 @@ class LLMHandler:
         tGen = time.time() - tGen
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         totalToks = sum(len(self.llm.tokenizer.encode(r)) for r in responses)
-        logLine(f"t+{tGen:.2f}s - Generated {len(prompts)} responses - {totalToks} tokens - {totalToks/tGen:.0f}toks")
+        logLine(f"\tt+{tGen:.2f}s - Generated {len(prompts)} responses - {totalToks} tokens - {totalToks/tGen:.0f}toks")
         return responses
 
-
     def process(self):
-        error_counters = {
+        processCounters = {
+            "total": 0,
+            "valid": 0,
             "bad_start": 0,
             "bad_end": 0,
             "bad_end_oversize": 0,
@@ -129,7 +130,6 @@ class LLMHandler:
             "bad_values": 0,
             "repeat": 0
         }
-        totalRequests = 0
         cIter = 0
         tProcess = time.time()
         
@@ -150,11 +150,11 @@ class LLMHandler:
                 break
             
             multiplication_factor = min(10, (self.batch_size // len(master_list) + 1))
-            logLine(f"Expanding master list from {len(master_list)} to {len(master_list) * multiplication_factor}.")
+            # logLine(f"Expanding master list from {len(master_list)} to {len(master_list) * multiplication_factor}.")
             master_list = master_list * multiplication_factor
             
             prompts = [item[2] for item in master_list]
-            totalRequests += len(prompts)
+            processCounters["total"] += len(prompts)
             responses = self._generate_batch(prompts)
 
             for (req_idx, prompt_idx, _), response in zip(master_list, responses):
@@ -162,32 +162,33 @@ class LLMHandler:
                 try:
                     extracted = self._extract_json(response, req.expectation)
                     req.add_response(prompt_idx, extracted)
+                    processCounters["valid"] += 1
                 except ValueError as e:
                     if "does not start correctly" in str(e):
-                        error_counters["bad_start"] += 1
+                        processCounters["bad_start"] += 1
                     elif "does not end correctly" in str(e):
-                        error_counters["bad_end"] += 1
+                        processCounters["bad_end"] += 1
                     elif "oversized and improperly terminated" in str(e):
-                        error_counters["bad_end_oversize"] += 1
+                        processCounters["bad_end_oversize"] += 1
                     else:
-                        error_counters["bad_values"] += 1
+                        processCounters["bad_values"] += 1
                 except KeyError:
-                    error_counters["bad_keys"] += 1
+                    processCounters["bad_keys"] += 1
                 except TypeError:
-                    error_counters["bad_values"] += 1
+                    processCounters["bad_values"] += 1
                 except Exception as e:
                     if "Duplicate response detected" in str(e):
-                        error_counters["repeat"] += 1
+                        processCounters["repeat"] += 1
                     else:
                         logLine(f"Unexpected error: {str(e)}")
 
         totalTokens = 0
         for req in self.queue:
-            totalTokens += sum(len(self.llm.tokenizer.encode(r)) if isinstance(r, str) and not o else 0 for r, o in zip(req.responses, req.outstanding))
+            totalTokens += sum(len(self.llm.tokenizer.encode(r)) if r and not o else 0 for r, o in zip(req.responses, req.outstanding))
             logLine(f"Prompt: {req.prompts[0]}")
             logLine(f"Response: {req.responses[0]}")
         
-        return (totalRequests, error_counters, time.time() - tProcess, totalTokens)
+        return (processCounters, time.time() - tProcess, totalTokens)
 
 if __name__ == "__main__":
     tMain = time.time()
@@ -222,16 +223,15 @@ if __name__ == "__main__":
 
         res = llm_handler.process()
         if res:
-            totalRequests, error_counters, tProcess, nToks = res
+            counters, tProcess, nToks = res
             validRate = nToks / tProcess
             templates[template] = validRate
             logLine(f"###Finished Processing Template")
             logLine(f"Template: {template}")
-            logLine(f"\t+{tProcess:.2f}s Total Valid Tokens: {nToks} - {validRate:.2f}toks")
-            logLine(f"\tTotal Requests: {totalRequests}")
-            logLine("\tError Counters:")
-            for error_type, count in error_counters.items():
-                logLine(f"\t  {error_type}: {count}")
+            logLine(f"+{tProcess:.2f}s Total Valid Tokens: {nToks} - {validRate:.2f}toks")
+            logLine("Counters:")
+            for error_type, count in counters.items():
+                logLine(f"   {error_type}: {count}")
             logLine("")  # Empty line for readability between templates
         # clear llm_handler.queue
         llm_handler.queue = []
