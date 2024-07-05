@@ -34,7 +34,7 @@ class Request:
             respStr = " ".join(respStr) if isinstance(respStr, list) else respStr
             self.unique_responses.add(respStr)
             if len(self.unique_responses) > i:
-                self.responses[prompt_idx] = str(response)
+                self.responses[prompt_idx] = response
                 self.outstanding[prompt_idx] = False
             else:
                 raise ValueError("Duplicate response detected")
@@ -198,7 +198,7 @@ class LLMHandler:
         totalTokens = 0
         for req in self.queue:
             logLine(self.count_object_types(req.responses))
-            totalTokens += sum(len(self.llm.tokenizer.encode(r)) if r and not o else 0 for r, o in zip(req.responses, req.outstanding))
+            totalTokens += sum(len(self.llm.tokenizer.encode(str(r))) if r and not o else 0 for r, o in zip(req.responses, req.outstanding))
             logLine(f"Prompt: {req.prompts[0]}")
             logLine(f"Response: {req.responses[0]}")
         
