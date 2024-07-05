@@ -96,7 +96,7 @@ class LLMHandler:
         text = text.split('<result>')[1].split('</result>')[0]
 
         try:
-            text = text.replace("\'", "").strip()
+            text = text.replace("\'", "").replace("\n","").strip()
             parsed_json = json.loads(text, strict=False)
             
             for key, expected_type in expectation.items():
