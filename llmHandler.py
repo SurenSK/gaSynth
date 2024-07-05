@@ -184,10 +184,12 @@ class LLMHandler:
                     elif "oversized and improperly terminated" in str(e):
                         processCounters["bad_end_oversize"] += 1
                     else:
+                        logLine(f"Unexpected error: {str(e)}")
                         processCounters["bad_values"] += 1
                 except KeyError:
                     processCounters["bad_keys"] += 1
                 except TypeError:
+                    logLine(f"Unexpected error: {str(e)}")
                     processCounters["bad_values"] += 1
                 except Exception as e:
                     if "Duplicate response detected" in str(e):
@@ -197,10 +199,9 @@ class LLMHandler:
 
         totalTokens = 0
         for req in self.queue:
-            logLine(self.count_object_types(req.responses))
             totalTokens += sum(len(self.llm.tokenizer.encode(str(r))) if r and not o else 0 for r, o in zip(req.responses, req.outstanding))
-            logLine(f"Prompt: {req.prompts[0]}")
-            logLine(f"Response: {req.responses[0]}")
+            # logLine(f"Prompt: {req.prompts[0]}")
+            # logLine(f"Response: {req.responses[0]}")
         
         return (processCounters, time.time() - tProcess, totalTokens)
 
