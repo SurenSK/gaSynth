@@ -24,22 +24,20 @@ class Request:
     
     def add_response(self, prompt_idx: int, response: Any):
         if isinstance(response, Exception):
-            return True
+            raise response
         if self.enforce_unique:
-            i=len(self.unique_responses)
+            i = len(self.unique_responses)
             respStr = response.values() if isinstance(response, dict) else response
             respStr = " ".join(respStr) if isinstance(respStr, list) else respStr
             self.unique_responses.add(respStr)
             if len(self.unique_responses) > i:
                 self.responses[prompt_idx] = response
                 self.outstanding[prompt_idx] = False
-                return False
             else:
-                return True
+                raise ValueError("Duplicate response detected")
         else:
             self.responses[prompt_idx] = response
             self.outstanding[prompt_idx] = False
-            return False
 
 class LLMHandler:
     def __init__(self, model_id: str, batch_size: int):
@@ -71,20 +69,34 @@ class LLMHandler:
         return req
     
     def _extract_json(self, text: str, expectation: Dict[str, Any]) -> Dict[str, Any]:
+        token_count = len(self.llm.tokenizer.encode(text))
+
+        if '<result>' not in text:
+            raise ValueError("JSON output does not start correctly")
+
+        if '</result>' not in text:
+            if token_count > 500:
+                raise ValueError("JSON output is oversized and improperly terminated")
+            else:
+                raise ValueError("JSON output does not end correctly")
+
+        text = text.split('<result>')[1].split('</result>')[0]
+
         try:
-            assert '<result>' in text and '</result>' in text
-            json_string = text.split('<result>')[1].split('</result>')[0].replace("\'", "").strip()
-            parsed_json = json.loads(json_string)
+            text = text.replace("\'", "").strip()
+            parsed_json = json.loads(text)
             
             for key, expected_type in expectation.items():
                 if key not in parsed_json:
-                    raise ValueError(f"Missing expected field: {key}")
+                    raise KeyError(f"Missing expected field: {key}")
                 if not isinstance(parsed_json[key], expected_type):
                     raise TypeError(f"Field '{key}' is not of type {expected_type.__name__}")
-            
+
             return parsed_json
-        except Exception as e:
-            return e
+
+        except json.JSONDecodeError:
+            raise ValueError("Invalid JSON format")
+
     
     def _generate_json_prompt(self, expectation: Dict[str, Any]) -> str:
         if self.jsonTemplate is None:
@@ -107,31 +119,35 @@ class LLMHandler:
         logLine(f"t+{tGen:.2f}s - Generated {len(prompts)} responses - {totalToks} tokens - {totalToks/tGen:.0f}toks")
         return responses
 
+
     def process(self):
-        totalMalformed = 0
+        error_counters = {
+            "bad_start": 0,
+            "bad_end": 0,
+            "bad_end_oversize": 0,
+            "bad_keys": 0,
+            "bad_values": 0,
+            "repeat": 0
+        }
         totalRequests = 0
         cIter = 0
         tProcess = time.time()
+        
         while any(any(req.outstanding) for req in self.queue):
             if cIter == self.maxIters:
-                logLine("Reached maximum iterations. Stopping process.")
+                logLine("###Reached maximum iterations. Stopping process.")
                 break
             cIter += 1
-            # logLine(f"Iteration {cIter}...")
 
             master_list = []
             for req_idx, req in enumerate(self.queue):
-                # logLine(f"Request {req_idx}: {sum(req.outstanding)} prompts outstanding")
                 for prompt_idx, (prompt, outstanding) in enumerate(zip(req.prompts, req.outstanding)):
                     if outstanding:
                         master_list.append((req_idx, prompt_idx, prompt+self._generate_json_prompt(req.expectation)))
             
-            if not master_list or len(master_list) == 0:
+            if not master_list:
                 logLine("Error: master_list is empty. This shouldn't happen. Stopping process.")
-                # all prompts were processed but something still went wrong
                 break
-            
-            # logLine(f"Master list size: {len(master_list)}")
             
             multiplication_factor = min(10, (self.batch_size // len(master_list) + 1))
             logLine(f"Expanding master list from {len(master_list)} to {len(master_list) * multiplication_factor}.")
@@ -143,15 +159,35 @@ class LLMHandler:
 
             for (req_idx, prompt_idx, _), response in zip(master_list, responses):
                 req = self.queue[req_idx]
-                extracted = self._extract_json(response, req.expectation)
-                totalMalformed += req.add_response(prompt_idx, extracted)
-        # logLine("All prompts processed successfully.")
+                try:
+                    extracted = self._extract_json(response, req.expectation)
+                    req.add_response(prompt_idx, extracted)
+                except ValueError as e:
+                    if "does not start correctly" in str(e):
+                        error_counters["bad_start"] += 1
+                    elif "does not end correctly" in str(e):
+                        error_counters["bad_end"] += 1
+                    elif "oversized and improperly terminated" in str(e):
+                        error_counters["bad_end_oversize"] += 1
+                    else:
+                        error_counters["bad_values"] += 1
+                except KeyError:
+                    error_counters["bad_keys"] += 1
+                except TypeError:
+                    error_counters["bad_values"] += 1
+                except Exception as e:
+                    if "Duplicate response detected" in str(e):
+                        error_counters["repeat"] += 1
+                    else:
+                        logLine(f"Unexpected error: {str(e)}")
+
         totalTokens = 0
         for req in self.queue:
-            totalTokens += sum(len(self.llm.tokenizer.encode(r)) if isinstance(r, str) and not o else 0 for r,o in zip(req.responses, req.outstanding))
+            totalTokens += sum(len(self.llm.tokenizer.encode(r)) if isinstance(r, str) and not o else 0 for r, o in zip(req.responses, req.outstanding))
             logLine(f"Prompt: {req.prompts[0]}")
             logLine(f"Response: {req.responses[0]}")
-        return (totalRequests, totalMalformed, time.time() - tProcess, totalTokens)
+        
+        return (totalRequests, error_counters, time.time() - tProcess, totalTokens)
 
 if __name__ == "__main__":
     tMain = time.time()
@@ -186,10 +222,20 @@ if __name__ == "__main__":
 
         res = llm_handler.process()
         if res:
-            totalRequests, totalMalformed, tProcess, nToks = res
+            totalRequests, error_counters, tProcess, nToks = res
             validRate = nToks / tProcess
             templates[template] = validRate
-            logLine(f"###Finished Process Template\nTemplate: {template} - Rate {validRate:.2f} valid toks per second.\n")
+            logLine(f"###Finished Processing Template")
+            logLine(f"Template: {template}")
+            logLine(f"\t+{tProcess:.2f}s Total Valid Tokens: {nToks} - {validRate:.2f}toks")
+            logLine(f"\tTotal Requests: {totalRequests}")
+            logLine("\tError Counters:")
+            for error_type, count in error_counters.items():
+                logLine(f"\t  {error_type}: {count}")
+            logLine("")  # Empty line for readability between templates
+        # clear llm_handler.queue
+        llm_handler.queue = []
+
     logLine("All templates processed.")
     with open("jsonTemplates.json", "w") as f:
         json.dump(templates, f)
