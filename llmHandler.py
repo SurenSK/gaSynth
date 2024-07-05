@@ -68,6 +68,16 @@ class LLMHandler:
         self.queue.append(req)
         return req
     
+    def count_object_types(self, obj_list):
+        type_counts = {}
+        for obj in obj_list:
+            obj_type = type(obj).__name__
+            if obj_type in type_counts:
+                type_counts[obj_type] += 1
+            else:
+                type_counts[obj_type] = 1
+        return type_counts
+    
     def _extract_json(self, text: str, expectation: Dict[str, Any]) -> Dict[str, Any]:
         token_count = len(self.llm.tokenizer.encode(text))
 
@@ -184,6 +194,7 @@ class LLMHandler:
 
         totalTokens = 0
         for req in self.queue:
+            logLine(self.count_object_types(req.responses))
             totalTokens += sum(len(self.llm.tokenizer.encode(r)) if r and not o else 0 for r, o in zip(req.responses, req.outstanding))
             logLine(f"Prompt: {req.prompts[0]}")
             logLine(f"Response: {req.responses[0]}")
