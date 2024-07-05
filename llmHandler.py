@@ -244,11 +244,12 @@ if __name__ == "__main__":
             counters, tProcess, totalValidTokens, totalTokens = res
             vToksRate = totalValidTokens / tProcess
             vToksRatio = totalValidTokens / totalTokens
+            vSampleRate = counters["valid"] / tProcess
 
             templates[template] = vToksRate
             logLine(f"###Finished Processing Template")
             logLine(f"Template: {template}")
-            logLine(f"+{tProcess:.2f}s Total Valid Tokens: {totalValidTokens} - Ratio {vToksRatio*100:2.0f}% - {vToksRate:.2f}toks")
+            logLine(f"+{tProcess:.2f}s Total Valid: {counters['total']}S {totalValidTokens}T - Ratio: {counters["total"]/counters["valid"]*100:2.0f}%S {vToksRatio*100:2.0f}%T - {vSampleRate:.0f}sams {vToksRate:.0f}toks")
             logLine("Counters:")
             for error_type, count in counters.items():
                 logLine(f"   {error_type}: {count}")
