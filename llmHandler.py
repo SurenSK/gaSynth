@@ -108,7 +108,7 @@ class LLMHandler:
             return parsed_json
 
         except json.JSONDecodeError:
-            raise ValueError("Invalid JSON format")
+            raise ValueError(f"Invalid JSON format {text}")
 
     
     def _generate_json_prompt(self, expectation: Dict[str, Any]) -> str:
