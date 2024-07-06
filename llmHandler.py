@@ -201,7 +201,7 @@ class LLMHandler:
                     else:
                         processCounters["bad_values"] += 1
             totalOutstandingPost = sum(sum(req.outstanding) for req in self.queue)
-            logLine(f"\t{totalOutstandingPre}>{totalOutstandingPost} | t+{tGen:3.0f}s - Generated {len(prompts):3d} responses - {rawTokens:6d} tokens - {rawTokens/tGen:4.0f}toks")
+            logLine(f"\t{totalOutstandingPre:3d}>{totalOutstandingPost:3d} | t+{tGen:3.0f}s - Generated {len(prompts):3d} responses - {rawTokens:6d} tokens - {rawTokens/tGen:4.0f}toks")
 
 
         totalValidTokens = 0
