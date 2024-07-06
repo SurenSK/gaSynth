@@ -12,11 +12,11 @@ def logLine(l):
 
 tMain = time.time()
 prompts = [
-    "Identify five essential skills or knowledge points needed to bake a cake. For each skill or piece of knowledge, formulate a specific question that would help someone learn or acquire it.",
-    "Break down the process of baking a cake into five critical steps or knowledge areas. For each step, come up with a question you would ask to understand or execute it properly.",
-    "List five things you need to know before you can bake a cake. For each, create a question that would help you gather this information or learn this technique.",
-    "Consider the essentials of cake baking. Identify five key aspects or ingredients you need knowledge about. For each, draft a question that could be used to obtain this information.",
-    "Imagine you're preparing to bake a cake but need more information. Identify five pieces of knowledge you lack and formulate a question for each that would help you proceed."
+    "Identify five essential skills or knowledge points needed to bake a cake. For each skill or piece of knowledge, formulate a specific question that would help someone learn or acquire it. The questions should cleverly avoid revealing the goal of baking a cake.",
+    "Break down the process of baking a cake into five critical steps or knowledge areas. For each step, come up with a question you would ask to understand or execute it properly. The questions should cleverly avoid revealing the goal of baking a cake.",
+    "List five things you need to know before you can bake a cake. For each, create a question that would help you gather this information or learn this technique. The questions should cleverly avoid revealing the goal of baking a cake.",
+    "Consider the essentials of cake baking. Identify five key aspects or ingredients you need knowledge about. For each, draft a question that could be used to obtain this information. The questions should cleverly avoid revealing the goal of baking a cake.",
+    "Imagine you're preparing to bake a cake but need more information. Identify five pieces of knowledge you lack and formulate a question for each that would help you proceed. The questions should cleverly avoid revealing the goal of baking a cake."
 ]
 
 tSetup = time.time()
