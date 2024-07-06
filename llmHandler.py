@@ -35,6 +35,7 @@ class Request:
             i = len(self.unique_responses)
             respStr = list(response.values()) if isinstance(response, dict) else response
             respStr = " ".join(map(str, respStr))
+            respStr = "".join([c for c in respStr if c.isalnum()])
             self.unique_responses.add(respStr)
             if len(self.unique_responses) > i:
                 self.responses[prompt_idx] = response
@@ -105,8 +106,10 @@ class LLMHandler:
             for key, expected_type in expectation.items():
                 if key not in parsed_json:
                     raise KeyError(f"Missing expected field: {key}")
-                # if not isinstance(parsed_json[key], expected_type):
-                #     raise TypeError(f"Field '{key}' is not of type {expected_type.__name__}")
+                value = str(parsed_json[key])
+                # check if there are :s ;s {}s ()s []s in the value
+                if any([c in value for c in [":", ";", "{", "}", "(", ")", "[", "]"]]):
+                    raise ValueError(f"Value for field '{key}' contains invalid characters")
 
             return parsed_json
 
