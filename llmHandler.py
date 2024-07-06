@@ -102,6 +102,13 @@ class LLMHandler:
         try:
             text = text.replace("\'", "").replace("\n","").strip()
             parsed_json = json.loads(text, strict=False)
+
+            receivedKeys = set(parsed_json.keys())
+            expectedKeys = set(expectation.keys())
+            if not receivedKeys.issubset(expectedKeys):
+                raise KeyError(f"Unexpected field(s) in response: {receivedKeys - expectedKeys}", 'too_many_keys')
+            if not expectedKeys.issubset(receivedKeys):
+                raise KeyError(f"Missing expected field(s): {expectedKeys - receivedKeys}", 'too_few_keys')
             
             for key, expected_type in expectation.items():
                 if key not in parsed_json:
@@ -145,7 +152,8 @@ class LLMHandler:
             "bad_start": 0,
             "bad_end": 0,
             "bad_end_oversize": 0,
-            "bad_keys": 0,
+            "too_few_keys": 0,
+            "too_many_keys": 0,
             "bad_values": 0,
             "repeat": 0
         }
@@ -194,8 +202,12 @@ class LLMHandler:
                         processCounters["bad_end_oversize"] += 1
                     else:
                         processCounters["bad_values"] += 1
-                except KeyError:
-                    processCounters["bad_keys"] += 1
+                except KeyError as e:
+                    error_message, error_type = e.args
+                    if error_type == 'too_few_keys':
+                        processCounters["too_few_keys"] += 1
+                    elif error_type == 'too_many_keys':
+                        processCounters["too_many_keys"] += 1
                 except TypeError:
                     processCounters["bad_values"] += 1
                 except Exception as e:
