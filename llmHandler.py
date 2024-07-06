@@ -132,8 +132,8 @@ class LLMHandler:
         tGen = time.time() - tGen
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         totalToks = sum(len(self.llm.tokenizer.encode(r)) for r in responses)
-        logLine(f"\tt+{tGen:3.0f}s - Generated {len(prompts)} responses - {totalToks:5d} tokens - {totalToks/tGen:4.0f}toks")
-        return totalToks, responses
+        # logLine(f"\tt+{tGen:3.0f}s - Generated {len(prompts)} responses - {totalToks:5d} tokens - {totalToks/tGen:4.0f}toks")
+        return totalToks, tGen, responses
 
     def process(self):
         processCounters = {
@@ -172,9 +172,10 @@ class LLMHandler:
             
             prompts = [item[2] for item in master_list]
             processCounters["total"] += len(prompts)
-            rawTokens, responses = self._generate_batch(prompts)
+            rawTokens, tGen, responses = self._generate_batch(prompts)
             totalTokens += rawTokens
-
+            
+            totalOutstandingPre = sum(sum(req.outstanding) for req in self.queue)
             for (req_idx, prompt_idx, _), response in zip(master_list, responses):
                 req = self.queue[req_idx]
                 try:
@@ -199,6 +200,9 @@ class LLMHandler:
                         processCounters["repeat"] += 1
                     else:
                         processCounters["bad_values"] += 1
+            totalOutstandingPost = sum(sum(req.outstanding) for req in self.queue)
+            logLine(f"\t{totalOutstandingPre}>{totalOutstandingPost} | t+{tGen:3.0f}s - Generated {len(prompts)} responses - {rawTokens:5d} tokens - {rawTokens/tGen:4.0f}toks")
+
 
         totalValidTokens = 0
         totalRequests = 0
