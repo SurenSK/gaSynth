@@ -39,5 +39,6 @@ if res:
     vSampleRate = counters["valid"] / tProcess
 
     logLine(f"Processed: {totalReq-totalOut}/{totalReq} - Ratio: {(counters['valid']/counters['total'])*100:2.0f}%S {vToksRatio*100:2.0f}%T - {vSampleRate:3.1f}sams {vToksRate:.0f}toks")
-for r in capital_request + country_request + reword_request + story_request:
-    logLine(r.response)
+for request in [capital_request, country_request, reword_request, story_request]:
+    for cOutstanding, cPrompt, cResponse in zip(request.outstanding, request.prompts, request.responses):
+        logLine(f"{not(cOutstanding)} {cPrompt} -> {cResponse}")
