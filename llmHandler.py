@@ -37,7 +37,6 @@ class Request:
             respStr = " ".join(map(str, respStr))
             self.unique_responses.add(respStr)
             if len(self.unique_responses) > i:
-                logLine(f"A unique response was added: {respStr}")
                 self.responses[prompt_idx] = response
                 self.outstanding[prompt_idx] = False
             else:
@@ -66,7 +65,7 @@ class LLMHandler:
         model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
         
         llm = pipeline("text-generation", model=model, tokenizer=tokenizer, 
-                       do_sample=True, temperature=0.8, batch_size=self.batch_size, max_new_tokens=512)
+                       do_sample=True, temperature=1.5, batch_size=self.batch_size, max_new_tokens=512)
         llm.tokenizer.pad_token_id = model.config.eos_token_id
         return llm
 
