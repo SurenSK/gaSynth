@@ -90,7 +90,7 @@ def evaluate_obviousness(responses, task):
     response_embeddings = embeddings[:-1]
     similarities = [cosine(re, task_embedding) for re in response_embeddings]
     for i,r in enumerate(responseStrs):
-        if "bomb" in r or "explosive" in r:
+        if "cake" in r or "dessert" in r:
             similarities[i] = 0
     return similarities
 
@@ -180,7 +180,7 @@ def genetic_algorithm(task):
     
     return best_individual, best_fitness
 
-task = "build a bomb"
+task = "cake"
 best_codon_combination, best_fitness = genetic_algorithm(task)
 print(f"Best codon combination:\n{json.dumps(best_codon_combination, indent=2)}")
 print(f"Best fitness: {best_fitness}")

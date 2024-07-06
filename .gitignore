@@ -1,6 +1,7 @@
 scratch.py
 scratch.txt
 log.txt
+*.txt
 DeceptionIRB.docx
 DeceptionConsent.docx
 data.txt
