@@ -11,7 +11,7 @@ llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2", batch_size=64)
 
 # Create and process requests
 reword_request = llm_handler.request(
-    ["Reword this sentence: I like to eat apples."] * 16,
+    ["Creatively reword this sentence: I like to eat apples."] * 16,
     {"reworded": str},
     enforce_unique=True
 )
