@@ -177,7 +177,8 @@ class LLMHandler:
                 logLine("Error: master_list is empty. This shouldn't happen. Stopping process.")
                 break
             
-            multiplication_factor = min(10, (self.batch_size // len(master_list) + 1))
+            minBatchSize = self.batch_size//4
+            multiplication_factor = min(minBatchSize, (self.batch_size // len(master_list) + 1))
             # logLine(f"Expanding master list from {len(master_list)} to {len(master_list) * multiplication_factor}.")
             master_list = master_list * multiplication_factor
             
