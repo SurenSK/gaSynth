@@ -201,6 +201,8 @@ class LLMHandler:
                         processCounters["bad_end"] += 1
                     elif "oversized and improperly terminated" in str(e):
                         processCounters["bad_end_oversize"] += 1
+                    elif "Duplicate response detected" in str(e):
+                        processCounters["repeat"] += 1
                     else:
                         processCounters["bad_values"] += 1
                 except KeyError as e:
@@ -212,9 +214,6 @@ class LLMHandler:
                 except TypeError:
                     processCounters["bad_values"] += 1
                 except Exception as e:
-                    if "Duplicate response detected" in str(e):
-                        processCounters["repeat"] += 1
-                    else:
                         processCounters["bad_values"] += 1
             totalOutstandingPost = sum(sum(req.outstanding) for req in self.queue)
             logLine(f"\t{totalOutstandingPre:3d}>{totalOutstandingPost:3d} | t+{tGen:3.0f}s - Generated {len(prompts):3d} responses - {rawTokens:6d} tokens - {rawTokens/tGen:4.0f}toks")
