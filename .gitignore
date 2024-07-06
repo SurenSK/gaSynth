@@ -5,7 +5,7 @@ DeceptionIRB.docx
 DeceptionConsent.docx
 data.txt
 samples.jsonl
-minillm.py
+minillm_template.py
 .env
 generated_responses.json
 generated_questions.json
