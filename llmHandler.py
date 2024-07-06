@@ -236,9 +236,9 @@ if __name__ == "__main__":
     llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2", batch_size=256)
     tSetup = time.time() - tSetup
     logLine(f"t+{tSetup:.2f}s - LLMHandler setup complete.")
-    for template in templates.keys():
+    for i,template in enumerate(templates.keys()):
         llm_handler.jsonTemplate = template
-        logLine(f"Processing template: {template}")
+        logLine(f"Processing template {i}/{len(templates.keys())}: {template}")
         capital_request = llm_handler.request([f"What is the capital of {c}?" for c in ["France", "Germany", "Italy", "Spain", "United Kingdom"]], {"city": str})
         country_request = llm_handler.request([f"Which country is {c} inside?" for c in ["Paris", "Berlin", "Rome", "Madrid", "London"]], {"country": str})
         reword_request = llm_handler.request(["Reword this sentence: I like to eat apples."] * 2, {"reworded": str}, enforce_unique=True)
