@@ -33,8 +33,8 @@ class Request:
             raise response
         if self.enforce_unique:
             i = len(self.unique_responses)
-            respStr = response.values() if isinstance(response, dict) else response
-            respStr = " ".join(respStr) if isinstance(respStr, list) else respStr
+            respStr = list(response.values()) if isinstance(response, dict) else response
+            respStr = " ".join(map(str, respStr))
             self.unique_responses.add(respStr)
             if len(self.unique_responses) > i:
                 logLine(f"A unique response was added: {respStr}")
