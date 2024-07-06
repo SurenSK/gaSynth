@@ -37,6 +37,7 @@ class Request:
             respStr = " ".join(respStr) if isinstance(respStr, list) else respStr
             self.unique_responses.add(respStr)
             if len(self.unique_responses) > i:
+                logLine(f"A unique response was added: {respStr}")
                 self.responses[prompt_idx] = response
                 self.outstanding[prompt_idx] = False
             else:
