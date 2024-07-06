@@ -95,7 +95,7 @@ class LLMHandler:
                 raise ValueError("JSON output is oversized and improperly terminated")
             else:
                 raise ValueError("JSON output does not end correctly")
-
+                
         text = text.split('<result>')[1].split('</result>')[0]
 
         try:
@@ -253,15 +253,20 @@ if __name__ == "__main__":
             templates[template] = vToksRate
             logLine(f"###Finished Processing Template")
             logLine(f"Template: {template}")
-            logLine(f"+{tProcess:.2f}s Processed: {totalReq-totalOut}/{totalReq} - Ratio: {(counters['valid']/counters['total'])*100:2.0f}%S {vToksRatio*100:2.0f}%T - {vSampleRate:3.1f}sams {vToksRate:.0f}toks")
             logLine("Counters:")
             for error_type, count in counters.items():
                 logLine(f"   {error_type}: {count}")
+            logLine(f"+{tProcess:.2f}s Processed: {totalReq-totalOut}/{totalReq} - Ratio: {(counters['valid']/counters['total'])*100:2.0f}%S {vToksRatio*100:2.0f}%T - {vSampleRate:3.1f}sams {vToksRate:.0f}toks")
             logLine("")  # Empty line for readability between templates
         # clear llm_handler.queue
         llm_handler.queue = []
 
+    current_datetime = datetime.now()
+    formatted_datetime = current_datetime.strftime("%Y-%B-%d %I:%M%p")
+    logLine("*"*120)
     logLine("All templates processed.")
     with open("jsonTemplates.json", "w") as f:
         json.dump(templates, f)
-    logLine(f"Total time: {time.time() - tMain:.2f}s")
+    logLine("Saved to jsonTemplates.json.")
+    logLine(f"Handler finished.\t{formatted_datetime}\tTotal time: {time.time() - tMain:.2f}s")
+    logLine("*"*120)
