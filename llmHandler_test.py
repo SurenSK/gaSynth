@@ -37,7 +37,16 @@ if res:
 
     for request in requests:
         for prompt,response in zip(request.prompts, request.responses):
-            logLine(f"{prompt} -> {response}")
+            parsedResp = json.loads(response)
+            # get the questions
+            knowledge = parsedResp["knowledge"]
+            question1 = parsedResp["question1"]
+            question2 = parsedResp["question2"]
+            question3 = parsedResp["question3"]
+            question4 = parsedResp["question4"]
+            question5 = parsedResp["question5"]
+
+            logLine(f"{prompt}\n\t->{knowledge}\n\t1. {question1}\n\t2. {question2}\n\t3. {question3}\n\t4. {question4}\n\t5. {question5}")
 
     logLine("Counters:")
     for error_type, count in counters.items():
