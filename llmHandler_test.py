@@ -39,7 +39,7 @@ if res:
         for prompt,response in zip(request.prompts, request.responses):
             logLine(f"Prompt: {prompt} -> Response: {response}")
             logLine(f"Prompt Type: {type(prompt)} Response Type: {type(response)}")
-            parsedResp = json.loads(response)
+            parsedResp = response
             # get the questions
             knowledge = parsedResp["knowledge"]
             question1 = parsedResp["question1"]
