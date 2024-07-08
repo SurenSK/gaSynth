@@ -137,6 +137,7 @@ class LLMHandler:
     def _generate_batch(self, prompts: List[str]) -> List[str]:
         # for i,p in enumerate(prompts):
         #     logLine(f"Prompt {i}: {p}")
+        logLine(f"Generating {len(prompts)} responses.")
         for p in prompts:
             logLine(f"Prompt: {p}")
         tGen = time.time()
