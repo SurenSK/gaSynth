@@ -33,7 +33,6 @@ class Sample:
     def requestQuestions(self):
         if self.fitness is not None:
             return
-        logLine(f"Requesting questions for relevance codon: {self.relevance_codon} and avoidance codon: {self.avoidance_codon}")
         for i in range(self.evalWidth):
             self.questions[i] = llm_handler.request([f"{self.relevance_codon} {self.avoidance_codon}"], {"question1": str, "question2": str, "question3": str, "question4": str, "question5": str})
     
@@ -48,7 +47,7 @@ class Sample:
             return
         logLine(f"Requesting relevance for relevance codon: {self.relevance_codon} and avoidance codon: {self.avoidance_codon}")
         for i,qset in enumerate(self.questions):
-            self.relevance_evals[i] = llm_handler.request(f"Could these questions be relevant to the task of {self.relevance_codon}?\n" + " ".join(qset), {"rationale": str, "relevant": str})
+            self.relevance_evals[i] = llm_handler.request([f"Could these questions be relevant to the task of {self.relevance_codon}?\n" + " ".join(qset)], {"rationale": str, "relevant": str})
 
     def setRelevanceEvals(self):
         if self.fitness is not None:

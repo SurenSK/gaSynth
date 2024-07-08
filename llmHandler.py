@@ -62,7 +62,7 @@ class LLMHandler:
         
         tokenizer = AutoTokenizer.from_pretrained(self.model_id, token=token)
         model = AutoModelForCausalLM.from_pretrained(self.model_id, token=token, cache_dir=".", 
-            torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map="auto")
+            torch_dtype=torch.bfloat16, device_map="auto")
         model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
         
         llm = pipeline("text-generation", model=model, tokenizer=tokenizer, 
@@ -138,8 +138,6 @@ class LLMHandler:
         # for i,p in enumerate(prompts):
         #     logLine(f"Prompt {i}: {p}")
         logLine(f"Generating {len(prompts)} responses.")
-        for p in prompts:
-            logLine(f"Prompt: {p}")
         tGen = time.time()
         responses = self.llm(prompts)
         tGen = time.time() - tGen
