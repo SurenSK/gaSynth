@@ -230,6 +230,7 @@ class LLMHandler:
             # logLine(f"Prompt: {req.prompts[0]}")
             # logLine(f"Response: {req.responses[0]}")
         
+        logLine(f"Processed {processCounters['total']} requests in {cIter} iterations.")
         return (processCounters, time.time() - tProcess, totalValidTokens, totalTokens, totalRequests, totalOutstanding)
 
 if __name__ == "__main__":

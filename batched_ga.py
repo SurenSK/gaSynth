@@ -108,11 +108,17 @@ def genetic_algorithm(initial_population: List[Sample]):
         logLine(f"Starting Generation {generation + 1}/{NGENS}")
         for sample in population:
             sample.requestQuestions()
+        logLine(f"Questions requested.")
         _ = llm_handler.process()
+        logLine(f"Questions processed.")
+
         for sample in population:
             sample.setQuestions()
             sample.requestRelevanceEvals()
+        logLine(f"Requesting relevance evaluations.")
         _ = llm_handler.process()
+        logLine(f"Relevance evaluations processed.")
+        
         for sample in population:
             sample.setRelevanceEvals()
             sample.setObviousnessScores()
