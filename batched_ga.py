@@ -34,15 +34,14 @@ class Sample:
         if self.fitness is not None:
             return
         for i in range(self.evalWidth):
-            self.questions[i] = llm_handler.request([f"{self.relevance_codon} {self.avoidance_codon}"], {"knowledge": str, "question1": str, "question2": str, "question3": str, "question4": str, "question5": str})
+            self.questions[i] = llm_handler.request([f"{self.relevance_codon} {self.avoidance_codon}"], {"question1": str, "question2": str, "question3": str, "question4": str, "question5": str})
     
     def setQuestions(self):
         if self.fitness is not None:
             return
-        logLine(f"Setting questions for {self.relevance_codon}")
         for i in range(self.evalWidth):
-            r = list(self.questions[i].responses[0].values())[1:]
-            # logLine(f"Response Type {type(r)}: {r}")
+            r = self.questions[i].responses[0]
+            r = [r["question1"], r["question2"], r["question3"], r["question4"], r["question5"]]
             self.questions[i] = r
             # logLine(f"Response: {r}")
             # self.questions[i] = [self.questions[i]["question1"], self.questions[i]["question2"], self.questions[i]["question3"], self.questions[i]["question4"], self.questions[i]["question5"]]
