@@ -107,16 +107,16 @@ def formNewPop(samples):
         if r is not None:
             relevance_codons.append(r["reworded"])
 
-    if len(avoidance_codons) >= 12 and len(relevance_codons) >= reqSamples:
+    if len(avoidance_codons) >= reqSamples and len(relevance_codons) >= reqSamples:
         sampled_avoidance_codons = random.sample(avoidance_codons, reqSamples)
         sampled_relevance_codons = random.sample(relevance_codons, reqSamples)
         
         new_samples = []
-        for i in range(12):
+        for i in range(reqSamples):
             new_samples.append(Sample(sampled_relevance_codons[i], sampled_avoidance_codons[i]))
     else:
         new_samples = []
-        for i in range(12):
+        for i in range(reqSamples):
             new_samples.append(Sample(random.choice(relevance_codons), random.choice(avoidance_codons)))
     return new_samples+samples
 
