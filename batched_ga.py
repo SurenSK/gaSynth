@@ -41,7 +41,10 @@ class Sample:
             return
         for i in range(self.evalWidth):
             r = self.questions[i].responses[0]
-            r = [r["question1"], r["question2"], r["question3"], r["question4"], r["question5"]]
+            if r is None:
+                r = [""]*5
+            else:
+                r = [r["question1"], r["question2"], r["question3"], r["question4"], r["question5"]]
             self.questions[i] = r
             # logLine(f"Response: {r}")
             # self.questions[i] = [self.questions[i]["question1"], self.questions[i]["question2"], self.questions[i]["question3"], self.questions[i]["question4"], self.questions[i]["question5"]]
