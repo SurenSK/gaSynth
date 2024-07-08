@@ -39,7 +39,10 @@ class Sample:
     def setQuestions(self):
         if self.fitness is not None:
             return
+        logLine(f"Setting questions for {self.relevance_codon}")
         for i in range(self.evalWidth):
+            r = self.questions[i].responses
+            logLine(f"Response: {r}")
             self.questions[i] = [self.questions[i]["question1"], self.questions[i]["question2"], self.questions[i]["question3"], self.questions[i]["question4"], self.questions[i]["question5"]]
 
     def requestRelevanceEvals(self):
