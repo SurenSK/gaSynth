@@ -59,6 +59,9 @@ class Sample:
         if self.fitness is not None:
             return
         for i in range(self.evalWidth):
+            if self.relevance_evals[i].responses[0] is None:
+                self.relevance_evals[i] = False
+                continue
             resp = str(self.relevance_evals[i].responses[0]["relevant"]).lower()
             self.relevance_evals[i] = "yes" in resp or "true" in resp or "1" in resp
 
