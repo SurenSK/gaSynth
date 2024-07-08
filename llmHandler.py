@@ -231,6 +231,8 @@ class LLMHandler:
             # logLine(f"Response: {req.responses[0]}")
         
         logLine(f"Processed {processCounters['total']} requests in {cIter} iterations.")
+        self.queue = []
+
         return (processCounters, time.time() - tProcess, totalValidTokens, totalTokens, totalRequests, totalOutstanding)
 
 if __name__ == "__main__":

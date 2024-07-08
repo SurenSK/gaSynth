@@ -94,8 +94,6 @@ def formNewPop(samples):
     nAvoidanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in avoidance_codons]*4, {"reworded": str}, enforce_unique=True)
     nRelevanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in relevance_codons]*4, {"reworded": str}, enforce_unique=True)
     llm_handler.process()
-    llm_handler.queue = []
-
     
     # avoidance_codons = [r["reworded"] for r in nAvoidanceRequest.responses]
     # relevance_codons = [r["reworded"] for r in nRelevanceRequest.responses]
@@ -133,7 +131,7 @@ def genetic_algorithm(initial_population: List[Sample]):
             sample.requestQuestions()
         logLine(f"Questions requested.")
         _ = llm_handler.process()
-        llm_handler.queue = []
+
         logLine(f"Questions processed.")
         for sample in population:
             sample.setQuestions()
@@ -146,7 +144,7 @@ def genetic_algorithm(initial_population: List[Sample]):
             sample.requestRelevanceEvals()
         logLine(f"Relevance evaluations requested.")
         _ = llm_handler.process()
-        llm_handler.queue = []
+
         tRel = time.time() - tRel
         logLine(f"+t{tRel:.0f}s Relevance evaluations processed.")
 
@@ -169,7 +167,7 @@ def genetic_algorithm(initial_population: List[Sample]):
         tPop = time.time()
         population = formNewPop(selected)
         tPop = time.time() - tPop
-        logLine(f"+t{tPop:.0f}s Population formed.")
+        logLine(f"+t{tPop:.0f}s Population formed. {len(population)} samples.")
 
     return population[0]
 
