@@ -143,7 +143,7 @@ class LLMHandler:
         tGen = time.time() - tGen
         responses = [r[0]['generated_text'].replace(prompt, "") for r, prompt in zip(responses, prompts)]
         totalToks = sum(len(self.llm.tokenizer.encode(r)) for r in responses)
-        # logLine(f"\tt+{tGen:3.0f}s - Generated {len(prompts)} responses - {totalToks:5d} tokens - {totalToks/tGen:4.0f}toks")
+        logLine(f"\tt+{tGen:3.0f}s - Generated {len(prompts)} responses - {totalToks:5d} tokens - {totalToks/tGen:4.0f}toks")
         return totalToks, tGen, responses
 
     def process(self):
