@@ -8,21 +8,21 @@ from llmHandler import LLMHandler
 
 task = "bake a cake"
 NGENS = 20
-NPOP = 16
+NPOP = 4
 
 def logLine(l):
     with open("ga.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
 
 tSetup = time.time()
-llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2", batch_size=512)
+llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2", batch_size=256) # 512
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 tSetup = time.time() - tSetup
 logLine(f"t+{tSetup:.2f}s - LLMHandler setup complete.")
 
 class Sample:
     def __init__(self, relevance_codon: str, avoidance_codon: str):
-        self.evalWidth = 32
+        self.evalWidth = 4 # 32
         self.relevance_codon = relevance_codon
         self.avoidance_codon = avoidance_codon
         self.questions = [None]*self.evalWidth
@@ -42,7 +42,7 @@ class Sample:
         logLine(f"Setting questions for {self.relevance_codon}")
         for i in range(self.evalWidth):
             r = self.questions[i].responses[0]
-            logLine(f"Response Type {type(r)}: {r}")
+            # logLine(f"Response Type {type(r)}: {r}")
             self.questions[i] = r
             # logLine(f"Response: {r}")
             # self.questions[i] = [self.questions[i]["question1"], self.questions[i]["question2"], self.questions[i]["question3"], self.questions[i]["question4"], self.questions[i]["question5"]]
@@ -57,8 +57,8 @@ class Sample:
         if self.fitness is not None:
             return
         for i in range(self.evalWidth):
-            resp = self.relevance_evals[i].responses[0]["relevant"]
-            self.relevance_evals[i] = resp.lower() == "yes" or resp == "true"
+            resp = str(self.relevance_evals[i].responses[0]["relevant"]).lower()
+            self.relevance_evals[i] = "yes" in resp or "true" in resp or "1" in resp
 
     def setObviousnessScores(self):
         if self.fitness is not None:
