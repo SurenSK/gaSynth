@@ -144,7 +144,7 @@ def genetic_algorithm(initial_population: List[Sample]):
         population.sort(reverse=True)
         selected = population[:4]
         for i,sample in enumerate(selected):
-            logLine(f"Sample {i} - Fitness: {sample.getFitness():.2f}:\n\tRelevance: {sample.relevance_codon}\n\tFitness: {sample.relevance_codon}")
+            logLine(f"Sample {i} - Fitness: {sample.getFitness():.2f}:\n\tRelevance: {sample.relevance_codon}\n\tFitness: {sample.avoidance_codon}")
         population = formNewPop(selected)
 
     return population[0]
