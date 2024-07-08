@@ -90,7 +90,7 @@ def formNewPop(samples):
     reqSamples = NPOP - len(samples)
     avoidance_codons = [s.avoidance_codon for s in samples]
     relevance_codons = [s.relevance_codon for s in samples]
-    logLine(f"Requesting new codons.")
+    # logLine(f"Requesting new codons.")
     nAvoidanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in avoidance_codons]*4, {"reworded": str}, enforce_unique=True)
     nRelevanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in relevance_codons]*4, {"reworded": str}, enforce_unique=True)
     llm_handler.process()
@@ -126,6 +126,7 @@ def genetic_algorithm(initial_population: List[Sample]):
     for generation in range(NGENS):
         logLine(f"Starting Generation {generation + 1}/{NGENS}")
 
+        tQGen = time.time()
         logLine(f"Requesting questions.")
         for sample in population:
             sample.requestQuestions()
@@ -134,15 +135,17 @@ def genetic_algorithm(initial_population: List[Sample]):
         logLine(f"Questions processed.")
         for sample in population:
             sample.setQuestions()
-        logLine(f"Questions set.")
+        tQGen = time.time() - tQGen
+        logLine(f"+t{tQGen:.0f}s Questions set.")
 
-
+        tRel = time.time()
         logLine(f"Requesting relevance evaluations.")
         for sample in population:
             sample.requestRelevanceEvals()
         logLine(f"Relevance evaluations requested.")
         _ = llm_handler.process()
-        logLine(f"Relevance evaluations processed.")
+        tRel = time.time() - tRel
+        logLine(f"+t{tRel:.0f}s Relevance evaluations processed.")
 
         for sample in population:
             sample.setRelevanceEvals()
@@ -154,7 +157,15 @@ def genetic_algorithm(initial_population: List[Sample]):
         selected = population[:4]
         for i,sample in enumerate(selected):
             logLine(f"Sample {i} - Fitness: {sample.getFitness():.2f}:\n\tRelevance: {sample.relevance_codon}\n\tAvoidance: {sample.avoidance_codon}")
+            # print the first question of each sample that wasn't ["", "", "", "", ""] (i.e. the first question that was actually generated)
+            for q in sample.questions:
+                if q[0] != [""]*5:
+                    logLine(f"\t{q}")
+                    break
+        tPop = time.time()
         population = formNewPop(selected)
+        tPop = time.time() - tPop
+        logLine(f"+t{tPop:.0f}s Population formed.")
 
     return population[0]
 
