@@ -94,6 +94,7 @@ def formNewPop(samples):
     nAvoidanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in avoidance_codons]*4, {"reworded": str}, enforce_unique=True)
     nRelevanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in relevance_codons]*4, {"reworded": str}, enforce_unique=True)
     llm_handler.process()
+    llm_handler.queue = []
 
     
     # avoidance_codons = [r["reworded"] for r in nAvoidanceRequest.responses]
@@ -132,6 +133,7 @@ def genetic_algorithm(initial_population: List[Sample]):
             sample.requestQuestions()
         logLine(f"Questions requested.")
         _ = llm_handler.process()
+        llm_handler.queue = []
         logLine(f"Questions processed.")
         for sample in population:
             sample.setQuestions()
@@ -144,6 +146,7 @@ def genetic_algorithm(initial_population: List[Sample]):
             sample.requestRelevanceEvals()
         logLine(f"Relevance evaluations requested.")
         _ = llm_handler.process()
+        llm_handler.queue = []
         tRel = time.time() - tRel
         logLine(f"+t{tRel:.0f}s Relevance evaluations processed.")
 
