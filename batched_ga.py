@@ -41,9 +41,11 @@ class Sample:
             return
         logLine(f"Setting questions for {self.relevance_codon}")
         for i in range(self.evalWidth):
-            r = self.questions[i].responses
-            logLine(f"Response: {r}")
-            self.questions[i] = [self.questions[i]["question1"], self.questions[i]["question2"], self.questions[i]["question3"], self.questions[i]["question4"], self.questions[i]["question5"]]
+            r = self.questions[i].responses[0]
+            logLine(f"Response Type {type(r)}: {r}")
+            self.questions[i] = r
+            # logLine(f"Response: {r}")
+            # self.questions[i] = [self.questions[i]["question1"], self.questions[i]["question2"], self.questions[i]["question3"], self.questions[i]["question4"], self.questions[i]["question5"]]
 
     def requestRelevanceEvals(self):
         if self.fitness is not None:
@@ -55,7 +57,7 @@ class Sample:
         if self.fitness is not None:
             return
         for i in range(self.evalWidth):
-            resp = self.relevance_evals[i]["relevant"]
+            resp = self.relevance_evals[i].responses[0]["relevant"]
             self.relevance_evals[i] = resp.lower() == "yes" or resp == "true"
 
     def setObviousnessScores(self):
