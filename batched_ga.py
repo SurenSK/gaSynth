@@ -115,6 +115,7 @@ def formNewPop(samples):
         for i in range(12):
             new_samples.append(Sample(sampled_relevance_codons[i], sampled_avoidance_codons[i]))
     else:
+        new_samples = []
         for i in range(12):
             new_samples.append(Sample(random.choice(relevance_codons), random.choice(avoidance_codons)))
     return new_samples+samples
