@@ -98,11 +98,11 @@ def formNewPop(samples):
     
     # avoidance_codons = [r["reworded"] for r in nAvoidanceRequest.responses]
     # relevance_codons = [r["reworded"] for r in nRelevanceRequest.responses]
-    avoidance_codons = []
+    # avoidance_codons = []
     for r in nAvoidanceRequest.responses:
         if r is not None:
             avoidance_codons.append(r["reworded"])
-    relevance_codons = []
+    # relevance_codons = []
     for r in nRelevanceRequest.responses:
         if r is not None:
             relevance_codons.append(r["reworded"])
