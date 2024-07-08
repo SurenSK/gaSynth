@@ -45,7 +45,6 @@ class Sample:
     def requestRelevanceEvals(self):
         if self.fitness is not None:
             return
-        logLine(f"Requesting relevance for relevance codon: {self.relevance_codon} and avoidance codon: {self.avoidance_codon}")
         for i,qset in enumerate(self.questions):
             self.relevance_evals[i] = llm_handler.request([f"Could these questions be relevant to the task of {self.relevance_codon}?\n" + " ".join(qset)], {"rationale": str, "relevant": str})
 
