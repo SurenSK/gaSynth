@@ -156,10 +156,11 @@ def genetic_algorithm(initial_population: List[Sample]):
         population.sort(reverse=True)
         selected = population[:4]
         for i,sample in enumerate(selected):
-            logLine(f"Sample {i} - Fitness: {sample.getFitness():.2f}:\n\tRelevance: {sample.relevance_codon}\n\tAvoidance: {sample.avoidance_codon}")
+            nValidQuestions = len([q for q in sample.questions if q[0] != ""])
+            logLine(f"Sample {i} - Valid {nValidQuestions} - Fitness: {sample.getFitness():.2f}:\n\tRelevance: {sample.relevance_codon}\n\tAvoidance: {sample.avoidance_codon}")
             # print the first question of each sample that wasn't ["", "", "", "", ""] (i.e. the first question that was actually generated)
             for q in sample.questions:
-                if q[0] != [""]*5:
+                if q[0] != "":
                     logLine(f"\t{q}")
                     break
         tPop = time.time()
