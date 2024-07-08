@@ -11,7 +11,7 @@ NGENS = 20
 NPOP = 16
 
 def logLine(l):
-    with open("handler.txt", "a") as log_file:
+    with open("ga.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
 
 tSetup = time.time()
