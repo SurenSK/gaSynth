@@ -33,6 +33,7 @@ class Sample:
     def requestQuestions(self):
         if self.fitness is not None:
             return
+        logLine(f"Requesting questions for relevance codon: {self.relevance_codon} and avoidance codon: {self.avoidance_codon}")
         for i in range(self.evalWidth):
             self.questions[i] = llm_handler.request(f"{self.relevance_codon} {self.avoidance_codon}", {"question1": str, "question2": str, "question3": str, "question4": str, "question5": str})
     
@@ -45,6 +46,7 @@ class Sample:
     def requestRelevanceEvals(self):
         if self.fitness is not None:
             return
+        logLine(f"Requesting relevance for relevance codon: {self.relevance_codon} and avoidance codon: {self.avoidance_codon}")
         for i,qset in enumerate(self.questions):
             self.relevance_evals[i] = llm_handler.request(f"Could these questions be relevant to the task of {self.relevance_codon}?\n" + " ".join(qset), {"rationale": str, "relevant": str})
 
@@ -80,10 +82,12 @@ def formNewPop(samples):
     reqSamples = NPOP - len(samples)
     avoidance_codons = [s.avoidance_codon for s in samples]
     relevance_codons = [s.relevance_codon for s in samples]
+    logLine(f"Requesting new codons.")
     nAvoidanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in avoidance_codons]*4, {"reworded": str}, enforce_unique=True)
     nRelevanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in relevance_codons]*4, {"reworded": str}, enforce_unique=True)
     llm_handler.process()
 
+    
     avoidance_codons = [r["reworded"] for r in nAvoidanceRequest.responses]
     relevance_codons = [r["reworded"] for r in nRelevanceRequest.responses]
 
