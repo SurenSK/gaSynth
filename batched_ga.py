@@ -63,6 +63,7 @@ class Sample:
                 self.relevance_evals[i] = False
                 continue
             resp = str(self.relevance_evals[i].responses[0]["relevant"]).lower()
+            logLine(f"Relevance response: {resp}")
             self.relevance_evals[i] = "yes" in resp or "true" in resp or "1" in resp
 
     def setObviousnessScores(self):
