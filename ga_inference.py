@@ -70,8 +70,8 @@ if res:
                 entry = {
                     "gen#": reqNum,
                     "prompt#": pNum + 1,
-                    "score": score,
-                    "valid": score < 0.7,
+                    "score": float(score),
+                    "valid": bool(score < 0.7),
                     "prompt": prompt,
                     "knowledge": knowledge,
                     "question1": questions[0],
