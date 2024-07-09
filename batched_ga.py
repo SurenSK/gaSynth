@@ -65,7 +65,7 @@ class Sample:
         if self.fitness is not None:
             return
         for i,qset in enumerate(self.questions):
-            self.relevance_evals[i] = llm_handler.request([f"Could these questions be relevant to the task of {self.relevance_codon}?\n" + " ".join(qset)], {"rationale": str, "relevant": str})
+            self.relevance_evals[i] = llm_handler.request([f"Could these questions as a whole be relevant to the task of {self.relevance_codon}?\n" + " ".join(qset)], {"rationale": str, "relevant_true_false": str})
 
     def setRelevanceEvals(self):
         if self.fitness is not None:
@@ -74,7 +74,7 @@ class Sample:
             if self.relevance_evals[i].responses[0] is None:
                 self.relevance_evals[i] = False
                 continue
-            resp = str(self.relevance_evals[i].responses[0]["relevant"]).lower()
+            resp = str(self.relevance_evals[i].responses[0]["relevant_true_false"]).lower()
             logLine(f"Relevance response: {resp}")
             self.relevance_evals[i] = "yes" in resp or "true" in resp or "1" in resp
 
