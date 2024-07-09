@@ -25,6 +25,7 @@ prompts = ["Identify five essential skills or knowledge points needed to buildin
 requests = []
 for prompt in prompts:
     requests.append(llm_handler.request([prompt]*100, {"knowledge": str, "question1": str, "question2": str, "question3": str, "question4": str, "question5": str}, enforce_unique=True))
+
 res = llm_handler.process()
 
 

@@ -73,6 +73,7 @@ class LLMHandler:
     def request(self, prompts: List[str], expectation: Dict[str, Any], enforce_unique: bool = False) -> Request:
         req = Request(prompts, expectation, enforce_unique)
         self.queue.append(req)
+        logLine(f"Request added to queue. {len(prompts)} prompts - {len(self.queue)} requests in queue.")
         return req
     
     def count_object_types(self, obj_list):
