@@ -113,11 +113,15 @@ def formNewPop(samples):
     # avoidance_codons = []
     for r in nAvoidanceRequest.responses:
         if r is not None:
+            if any(c in r["reworded"] for c in [":", ";", "{", "}", "(", ")", "[", "]"]):
+                continue
             avoidance_codons.append(r["reworded"])
     # relevance_codons = []
     for r in nRelevanceRequest.responses:
         if r is not None:
-            relevance_codons.append(r["reworded"])
+            if any(c in r["reworded"] for c in [":", ";", "{", "}", "(", ")", "[", "]"]):
+                continue
+            avoidance_codons.append(r["reworded"])
 
     if len(avoidance_codons) >= reqSamples and len(relevance_codons) >= reqSamples:
         sampled_avoidance_codons = random.sample(avoidance_codons, reqSamples)
