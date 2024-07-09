@@ -117,6 +117,7 @@ class LLMHandler:
                 value = str(parsed_json[key])
                 # check if there are :s ;s {}s ()s []s in the value
                 if any([c in value for c in [":", ";", "{", "}", "(", ")", "[", "]"]]):
+                    logLine(f"Value for field '{key}' contains invalid characters: {value}")
                     raise ValueError(f"Value for field '{key}' contains invalid characters")
 
             return parsed_json
