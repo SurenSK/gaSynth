@@ -124,6 +124,8 @@ class LLMHandler:
                         logLine(f"Value for field '{key}' contains invalid characters: {value}")
                         raise ValueError(f"Value for field '{key}' contains invalid characters: {value}")
                     # raise ValueError(f"Value for field '{key}' contains invalid characters")
+                else:
+                    parsed_json[key] = value
 
             return parsed_json
 
