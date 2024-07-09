@@ -105,7 +105,7 @@ def formNewPop(samples):
     relevance_codons = [s.relevance_codon for s in samples]
     # logLine(f"Requesting new codons.")
     nAvoidanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in avoidance_codons]*16, {"reworded": str}, enforce_unique=True)
-    nRelevanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in relevance_codons]*16c, {"reworded": str}, enforce_unique=True)
+    nRelevanceRequest = llm_handler.request([f"Reword this sentence: {c}" for c in relevance_codons]*16, {"reworded": str}, enforce_unique=True)
     llm_handler.process()
     
     # avoidance_codons = [r["reworded"] for r in nAvoidanceRequest.responses]
