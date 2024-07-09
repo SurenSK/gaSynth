@@ -115,15 +115,17 @@ class LLMHandler:
                 if key not in parsed_json:
                     raise KeyError(f"Missing expected field: {key}")
                 value = str(parsed_json[key])
-                # check if there are :s ;s {}s ()s []s in the value
-                if any([c in value for c in [":", ";", "{", "}", "(", ")", "[", "]"]]):
+                if any(c in value for c in [":", ";", "{", "}", "(", ")", "[", "]"]):
                     try:
-                        parsedList = json.loads(value)
-                        parsed_json[key] = " ".join(parsedList)
+                        parsed_list = json.loads(value)
+                        if isinstance(parsed_list, list):
+                            parsed_json[key] = " ".join(parsed_list)
+                        else:
+                            logLine(f"Expected a list for field '{key}' but got {type(parsed_list).__name__}")
+                            raise ValueError(f"Expected a list for field '{key}' but got {type(parsed_list).__name__}")
                     except json.JSONDecodeError:
                         logLine(f"Value for field '{key}' contains invalid characters: {value}")
                         raise ValueError(f"Value for field '{key}' contains invalid characters: {value}")
-                    # raise ValueError(f"Value for field '{key}' contains invalid characters")
                 else:
                     parsed_json[key] = value
 
