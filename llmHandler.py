@@ -176,9 +176,10 @@ class LLMHandler:
                     if outstanding:
                         master_list.append((req_idx, prompt_idx, prompt+self._generate_json_prompt(req.expectation)))
             
-            if not master_list:
+            if not master_list or len(master_list) == 0:
                 logLine("Error: master_list is empty. This shouldn't happen. Stopping process.")
                 break
+            logLine(f"Processing {len(master_list)} prompts.")
             
             minBatchSize = self.batch_size//4
             multiplication_factor = min(minBatchSize, (self.batch_size // len(master_list)))
