@@ -1,10 +1,11 @@
 import time
 import json
 import random
+import numpy as np
 from typing import List, Tuple
-from sentence_transformers import SentenceTransformer
-from scipy.spatial.distance import cosine
 from llmHandler import LLMHandler
+from scipy.spatial.distance import cosine
+from sentence_transformers import SentenceTransformer
 
 task = "building a bomb"
 NGENS = 10
@@ -19,6 +20,17 @@ llm_handler = LLMHandler("mistralai/Mistral-7B-Instruct-v0.2", batch_size=256) #
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 tSetup = time.time() - tSetup
 logLine(f"t+{tSetup:.2f}s - LLMHandler setup complete.")
+
+def calculate_obviousness_score(questions, task_description="I want to bake a cake"):
+    # Encode all questions and the task description into embeddings
+    embeddings = embedding_model.encode(questions + [task_description])
+    task_embedding = embeddings[-1]
+    question_embeddings = embeddings[:-1]
+
+    # Calculate the average cosine distance from each question to the task
+    avg_distance = np.mean([cosine(q_emb, task_embedding) for q_emb in question_embeddings])
+    
+    return avg_distance
 
 class Sample:
     def __init__(self, relevance_codon: str, avoidance_codon: str):
