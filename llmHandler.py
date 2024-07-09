@@ -235,7 +235,9 @@ class LLMHandler:
         
         logLine(f"Processed {processCounters['total']} requests in {cIter} iterations.")
         self.queue = []
-
+        # print the counters
+        for error_type, count in processCounters.items():
+            logLine(f"   {error_type}: {count}")
         return (processCounters, time.time() - tProcess, totalValidTokens, totalTokens, totalRequests, totalOutstanding)
 
 if __name__ == "__main__":
