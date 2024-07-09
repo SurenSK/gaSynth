@@ -124,7 +124,7 @@ class LLMHandler:
                             logLine(f"Expected a list for field '{key}' but got {type(parsed_list).__name__}")
                             raise ValueError(f"Expected a list for field '{key}' but got {type(parsed_list).__name__}")
                     except json.JSONDecodeError:
-                        logLine(f"Value for field '{key}' contains invalid characters: {value}")
+                        logLine(f"Value for field '{key}' contains invalid characters: {value} {type(value).__name__} {type(value)}")
                         raise ValueError(f"Value for field '{key}' contains invalid characters: {value}")
                 else:
                     parsed_json[key] = value
