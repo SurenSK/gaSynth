@@ -158,6 +158,8 @@ class LLMHandler:
             "too_many_keys": 0,
             "bad_values": 0,
             "repeat": 0,
+            "unknown_val": 0,
+            "unknown_type": 0,
             "unknown": 0
         }
         cIter = 0
@@ -209,7 +211,7 @@ class LLMHandler:
                     elif "Duplicate response detected" in str(e):
                         processCounters["repeat"] += 1
                     else:
-                        processCounters["unknown"] += 1
+                        processCounters["unknown_val"] += 1
                 except KeyError as e:
                     error_message, error_type = e.args
                     if error_type == 'too_few_keys':
@@ -217,7 +219,7 @@ class LLMHandler:
                     elif error_type == 'too_many_keys':
                         processCounters["too_many_keys"] += 1
                 except TypeError:
-                    processCounters["unknown"] += 1
+                    processCounters["unknown_type"] += 1
                 except Exception as e:
                     processCounters["unknown"] += 1
             totalOutstandingPost = sum(sum(req.outstanding) for req in self.queue)
