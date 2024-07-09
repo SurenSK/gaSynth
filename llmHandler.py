@@ -183,6 +183,7 @@ class LLMHandler:
             
             minBatchSize = self.batch_size//4
             multiplication_factor = min(minBatchSize, (self.batch_size // len(master_list)))
+            multiplication_factor = max(1, multiplication_factor)
             # logLine(f"Expanding master list from {len(master_list)} to {len(master_list) * multiplication_factor}.")
             master_list = master_list * multiplication_factor
             
