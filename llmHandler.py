@@ -179,12 +179,12 @@ class LLMHandler:
             if not master_list or len(master_list) == 0:
                 logLine("Error: master_list is empty. This shouldn't happen. Stopping process.")
                 break
-            logLine(f"Processing {len(master_list)} prompts.")
+            # logLine(f"Processing {len(master_list)} prompts.")
             
             minBatchSize = self.batch_size//4
             multiplication_factor = min(minBatchSize, (self.batch_size // len(master_list)))
             multiplication_factor = max(1, multiplication_factor)
-            logLine(f"Expanding master list from {len(master_list)} to {len(master_list) * multiplication_factor}.")
+            # logLine(f"Expanding master list from {len(master_list)} to {len(master_list) * multiplication_factor}.")
             master_list = master_list * multiplication_factor
             
             prompts = [item[2] for item in master_list]
@@ -237,7 +237,7 @@ class LLMHandler:
         self.queue = []
         # print the counters
         for error_type, count in processCounters.items():
-            logLine(f"   {error_type}: {count}")
+            logLine(f"\t   {error_type}: {count}")
         return (processCounters, time.time() - tProcess, totalValidTokens, totalTokens, totalRequests, totalOutstanding)
 
 if __name__ == "__main__":
