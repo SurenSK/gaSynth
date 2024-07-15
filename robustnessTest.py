@@ -27,6 +27,9 @@ seed_templates = [
     "Provide a JSON response with the {field_description}. Use <result></result> tags around the JSON. No extra text."
 ]
 
+
+# TODO Robustness metric as resilience to rewording, capitalization, and other minor changes
+
 templates = []
 templateRequests = []
 for seed in seed_templates:
