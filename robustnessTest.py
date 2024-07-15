@@ -39,6 +39,7 @@ res = llm_handler.process()
 for req in templateRequests:
     responses = req.responses
     for response in responses:
+        logLine(f"Response: {response}")
         proposed_template = response.get("reworded", "")
         if "{field_description}" in proposed_template and "<result></result>" in proposed_template:
             templates.append({"gen": 1, "template": proposed_template})
@@ -53,7 +54,6 @@ logLine(f"Generated {len(templates)-10} new templates from seed templates.")
 # verify the stories are at least 100 characters long each
 # assign accuracy % to each template based on how many of the 512 test requests were correct
 # save the results to a jsonl in the format: {accuracy, generation, template, numCorrectCapitals, numCorrectCountries, numCorrectRewords, numCorrectStories, numCorrectTotal}
-
 
 for i,t in enumerate(templates):
     template = t["template"]
