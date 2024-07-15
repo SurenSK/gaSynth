@@ -2,8 +2,8 @@ scratch.py
 scratch.txt
 log.txt
 *.txt
-DeceptionIRB.docx
-DeceptionConsent.docx
+*.docx
+*.pptx
 data.txt
 samples.jsonl
 minillm_template.py
