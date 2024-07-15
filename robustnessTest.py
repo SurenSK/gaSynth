@@ -35,7 +35,10 @@ templateRequests = []
 for seed in seed_templates:
     templates.append({"gen": 0, "template": seed})
     templateRequests.append(llm_handler.request([f"Reword this sentence: {seed}"]*10, {"reworded": str}, enforce_unique=True))
+
+tTempGen = time.time()
 res = llm_handler.process()
+logLine(f"+{tTempGen:.2f}s Template Generation Processed.")
 for req in templateRequests:
     responses = req.responses
     for response in responses:
