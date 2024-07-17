@@ -24,19 +24,30 @@ class CustomModel(CustomGenerationMixin, AutoModelForCausalLM):
 
 # Model and tokenizer initialization with the specific configurations
 model_id = "mistralai/Mistral-7B-Instruct-v0.2"
+logLine("Test - Loading tokenizer")
 tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=token)
+logLine("Test - Loaded tokenizer")
+logLine("Test - Loading model")
 model = AutoModelForCausalLM.from_pretrained(model_id, use_auth_token=token, cache_dir=".", torch_dtype=torch.bfloat16, device_map="auto")
+logLine("Test - Loaded model")
 
-# Compile the model using torch.compile for optimized execution
+logLine("Test - Compiling model")
 model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
+logLine("Test - Compiled model")
 
 # Create the custom model class instance with the compiled model
+logLine("Test - Creating custom model")
 model = CustomModel(model.config)
 model.load_state_dict(model.state_dict())
+logLine("Test - Created custom model")
 
 # Setup the text generation pipeline with the custom model
+logLine("Test - Creating pipeline")
 pipeline = TextGenerationPipeline(model=model, tokenizer=tokenizer, device=0)  # Adjust device as per your configuration
+logLine("Test - Created pipeline")
 
 # Generate text using your custom decoding strategy
+logLine("Test - Generating text")
 texts = pipeline("Hey whats up", num_return_sequences=3)
+logLine("Test - Generated text")
 logLine(texts)
