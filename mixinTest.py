@@ -7,10 +7,15 @@ token = os.getenv('HUGGINGFACE_TOKEN')
 if token is None:
     raise ValueError("HUGGINGFACE_TOKEN is not set in the environment.")
 
+
+def logLine(l):
+    with open("ga.txt", "a") as log_file:
+        log_file.write(str(l) + "\n")
+
 # Custom mixin with a reimplementation of beam search
 class CustomGenerationMixin(GenerationMixin):
     def beam_search(self, input_ids, beam_scorer, logits_processor=None, stopping_criteria=None, pad_token_id=None, eos_token_id=None, output_scores=False, return_dict_in_generate=False, **model_kwargs):
-        print("Test - Running custom beam search")
+        logLine("Test - Running custom beam search")
         return super().beam_search(input_ids, beam_scorer, logits_processor, stopping_criteria, pad_token_id, eos_token_id, output_scores, return_dict_in_generate, **model_kwargs)
 
 # Extending the AutoModelForCausalLM with custom generation mixin
@@ -34,4 +39,4 @@ pipeline = TextGenerationPipeline(model=model, tokenizer=tokenizer, device=0)  #
 
 # Generate text using your custom decoding strategy
 texts = pipeline("Hey whats up", num_return_sequences=3)
-print(texts)
+logLine(texts)
