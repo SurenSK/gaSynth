@@ -40,7 +40,7 @@ logLine("Test - Compiled model")
 
 # Setup the text generation pipeline with the custom model
 logLine("Test - Creating pipeline")
-pipeline = TextGenerationPipeline(model=model, tokenizer=tokenizer, device=0)  # Adjust device as per your configuration
+pipeline = TextGenerationPipeline(model=model, tokenizer=tokenizer)  # Adjust device as per your configuration
 logLine("Test - Created pipeline")
 
 # Generate text using your custom decoding strategy
