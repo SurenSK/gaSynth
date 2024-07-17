@@ -2,14 +2,16 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationMixin, TextGenerationPipeline
 from dotenv import load_dotenv
 import os
+
+# Load environment variables
 load_dotenv()
 token = os.getenv('HUGGINGFACE_TOKEN')
 if token is None:
     raise ValueError("HUGGINGFACE_TOKEN is not set in the environment.")
 
-
+# Logging function
 def logLine(l):
-    with open("ga.txt", "a") as log_file:
+    with open("mix.txt", "a") as log_file:
         log_file.write(str(l) + "\n")
 
 # Custom mixin with a reimplementation of beam search
@@ -22,24 +24,19 @@ class CustomGenerationMixin(GenerationMixin):
 class CustomModel(CustomGenerationMixin, AutoModelForCausalLM):
     pass
 
-# Model and tokenizer initialization with the specific configurations
+# Initialize model and tokenizer with specific configurations
 model_id = "mistralai/Mistral-7B-Instruct-v0.2"
 logLine("Test - Loading tokenizer")
 tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=token)
 logLine("Test - Loaded tokenizer")
 logLine("Test - Loading model")
-model = AutoModelForCausalLM.from_pretrained(model_id, use_auth_token=token, cache_dir=".", torch_dtype=torch.bfloat16, device_map="auto")
+model = CustomModel.from_pretrained(model_id, use_auth_token=token, cache_dir=".", torch_dtype=torch.bfloat16, device_map="auto")
 logLine("Test - Loaded model")
 
+# Optionally compile the model with torch.compile for optimized execution
 logLine("Test - Compiling model")
 model = torch.compile(model, mode="reduce-overhead", fullgraph=True)
 logLine("Test - Compiled model")
-
-# Create the custom model class instance with the compiled model
-logLine("Test - Creating custom model")
-model = CustomModel(model.config)
-model.load_state_dict(model.state_dict())
-logLine("Test - Created custom model")
 
 # Setup the text generation pipeline with the custom model
 logLine("Test - Creating pipeline")
