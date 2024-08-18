@@ -45,6 +45,6 @@ logLine("Test - Created pipeline")
 
 # Generate text using your custom decoding strategy
 logLine("Test - Generating text")
-texts = pipeline("Hey whats up", num_return_sequences=3, num_beams=5, do_sample=True)
+texts = pipeline("Hey whats up", max_new_tokens=100, num_return_sequences=3, num_beams=5, do_sample=True)
 logLine("Test - Generated text")
 logLine(texts)
